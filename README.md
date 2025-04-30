@@ -23,12 +23,20 @@ git clone https://github.com/wunderkind2k1/auth-server-task.git
 cd auth-server-task
 ```
 
-2. Run the server:
 ```bash
-go run main.go
+JWT_SECRET_KEY="your-secure-256-bit-secret" go run main.go
+
 ```
 
 The server will start on port 8080.
+
+## Configuration
+
+### Environment Variables
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| JWT_SECRET_KEY | Secret key used for signing JWT tokens | Yes |
 
 ## API Endpoints
 
