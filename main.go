@@ -1,12 +1,11 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
 
+	"oauth2-task/internal/auth"
 	"oauth2-task/internal/token"
 )
 
@@ -30,43 +29,13 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check Basic Auth
-	auth := r.Header.Get("Authorization")
-	if auth == "" {
+	// Validate Basic Auth
+	if err := auth.ParseBasicAuth(r.Header.Get("Authorization")); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(TokenError{
-			Error:            "invalid_client",
-			ErrorDescription: "Authorization header required",
-		})
-		slog.Error("Missing authorization header")
-		return
-	}
-
-	// Parse Basic Auth
-	parts := strings.Split(auth, " ")
-	if len(parts) != 2 || parts[0] != "Basic" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(TokenError{
-			Error:            "invalid_client",
-			ErrorDescription: "Invalid authorization header format",
-		})
-		slog.Error("Invalid authorization header format")
-		return
-	}
-
-	// For now, we'll accept any valid Basic Auth credentials
-	// In a real implementation, we would validate against stored client credentials
-	_, err := base64.StdEncoding.DecodeString(parts[1])
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(TokenError{
-			Error:            "invalid_client",
-			ErrorDescription: "Invalid credentials",
-		})
-		slog.Error("Invalid base64 encoding in credentials")
+		errorResponse := auth.GetErrorResponse(err)
+		json.NewEncoder(w).Encode(errorResponse)
+		slog.Error("Authentication failed", "error", err)
 		return
 	}
 
@@ -79,7 +48,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(TokenError{
+		json.NewEncoder(w).Encode(auth.ErrorResponse{
 			Error:            "server_error",
 			ErrorDescription: "Failed to generate token",
 		})
