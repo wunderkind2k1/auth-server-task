@@ -65,7 +65,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		slog.Error("Failed to generate token", "error", err)
 		return
-	}3
+	}
 
 	// Return the token response
 	response := TokenResponse{
