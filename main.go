@@ -1,11 +1,12 @@
 package main
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"log/slog"
 	"net/http"
-	"strings"
+
+	"oauth2-task/internal/auth"
+	"oauth2-task/internal/token"
 )
 
 // TokenResponse represents the OAuth2 token response
@@ -28,49 +29,36 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check Basic Auth
-	auth := r.Header.Get("Authorization")
-	if auth == "" {
+	// Validate Basic Auth
+	if err := auth.ParseBasicAuth(r.Header.Get("Authorization")); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(TokenError{
-			Error:            "invalid_client",
-			ErrorDescription: "Authorization header required",
-		})
-		slog.Error("Missing authorization header")
+		errorResponse := auth.GetErrorResponse(err)
+		json.NewEncoder(w).Encode(errorResponse)
+		slog.Error("Authentication failed", "error", err)
 		return
 	}
 
-	// Parse Basic Auth
-	parts := strings.Split(auth, " ")
-	if len(parts) != 2 || parts[0] != "Basic" {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(TokenError{
-			Error:            "invalid_client",
-			ErrorDescription: "Invalid authorization header format",
-		})
-		slog.Error("Invalid authorization header format")
-		return
-	}
+	// Create token generator
+	// In a real application, this should be a secure secret key stored in environment variables
+	generator := token.NewGenerator("your-256-bit-secret")
 
-	// For now, we'll accept any valid Basic Auth credentials
-	// In a real implementation, we would validate against stored client credentials
-	_, err := base64.StdEncoding.DecodeString(parts[1])
+	// Generate a real JWT token
+	tokenString, err := generator.GenerateToken()
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(TokenError{
-			Error:            "invalid_client",
-			ErrorDescription: "Invalid credentials",
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(auth.ErrorResponse{
+			Error:            "server_error",
+			ErrorDescription: "Failed to generate token",
 		})
-		slog.Error("Invalid base64 encoding in credentials")
+		slog.Error("Failed to generate token", "error", err)
 		return
 	}
 
-	// Return a static token response
+	// Return the token response
 	response := TokenResponse{
-		AccessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxNTE2MjM5MDIyfQ",
+		AccessToken: tokenString,
 		TokenType:   "Bearer",
 		ExpiresIn:   3600,
 	}
