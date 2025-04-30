@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/base64"
 	"errors"
+	"log/slog"
 	"strings"
 )
 
@@ -54,23 +55,27 @@ func GetErrorResponse(err error) ErrorResponse {
 // ParseBasicAuth validates the Authorization header for Basic Auth
 func ParseBasicAuth(authHeader string) error {
 	if authHeader == "" {
+		slog.Error(ErrMissingHeader.Error())
 		return ErrMissingHeader
 	}
 
 	parts := strings.Split(authHeader, " ")
 	if len(parts) != 2 || parts[0] != "Basic" {
+		slog.Error(ErrInvalidFormat.Error(), "header", authHeader)
 		return ErrInvalidFormat
 	}
 
 	// Decode the base64-encoded credentials
 	decoded, err := base64.StdEncoding.DecodeString(parts[1])
 	if err != nil {
+		slog.Error(ErrInvalidBase64.Error(), "error", err)
 		return ErrInvalidBase64
 	}
 
 	// Validate credentials format (username:password)
 	credentials := strings.SplitN(string(decoded), ":", 2)
 	if len(credentials) != 2 {
+		slog.Error(ErrInvalidFormat.Error())
 		return ErrInvalidFormat
 	}
 

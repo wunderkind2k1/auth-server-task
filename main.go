@@ -4,10 +4,22 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"os"
 
 	"oauth2-task/internal/auth"
 	"oauth2-task/internal/token"
 )
+
+var secretKey string
+
+func setup() {
+	secretKey = os.Getenv("JWT_SECRET_KEY")
+	if secretKey == "" {
+		slog.Error("Mandatory JWT_SECRET_KEY environment variable is not set")
+		os.Exit(1)
+	}
+	slog.Info("Mandatory JWT_SECRET_KEY environment variable is set")
+}
 
 // TokenResponse represents the OAuth2 token response
 type TokenResponse struct {
@@ -40,8 +52,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create token generator
-	// In a real application, this should be a secure secret key stored in environment variables
-	generator := token.NewGenerator("your-256-bit-secret")
+	generator := token.NewGenerator(secretKey)
 
 	// Generate a real JWT token
 	tokenString, err := generator.GenerateToken()
@@ -54,7 +65,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		})
 		slog.Error("Failed to generate token", "error", err)
 		return
-	}
+	}3
 
 	// Return the token response
 	response := TokenResponse{
@@ -68,6 +79,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	setup()
 	server := &http.Server{Addr: ":8080"}
 	slog.Info("Starting server", "port", 8080)
 	http.HandleFunc("/token", tokenHandler)

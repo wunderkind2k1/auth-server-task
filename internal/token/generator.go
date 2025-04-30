@@ -1,6 +1,7 @@
 package token
 
 import (
+	"log/slog"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -46,6 +47,7 @@ func (g *Generator) GenerateToken() (string, error) {
 	// Generate encoded token
 	tokenString, err := token.SignedString(g.secretKey)
 	if err != nil {
+		slog.Error("failed to sign JWT token", "error", err)
 		return "", err
 	}
 
