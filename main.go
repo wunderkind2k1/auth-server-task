@@ -6,6 +6,9 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 // TokenResponse represents the OAuth2 token response
@@ -19,6 +22,41 @@ type TokenResponse struct {
 type TokenError struct {
 	Error            string `json:"error"`
 	ErrorDescription string `json:"error_description,omitempty"`
+}
+
+// CustomClaims represents the JWT claims
+type CustomClaims struct {
+	Sub  string `json:"sub"`
+	Name string `json:"name"`
+	jwt.RegisteredClaims
+}
+
+func generateToken() (string, error) {
+	// Create the Claims
+	claims := CustomClaims{
+		"1234567890",
+		"John Doe",
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			NotBefore: jwt.NewNumericDate(time.Now()),
+			Issuer:    "auth-server",
+			Subject:   "1234567890",
+		},
+	}
+
+	// Create token with claims
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
+	// Generate encoded token
+	// In a real application, this should be a secure secret key stored in environment variables
+	secretKey := []byte("your-256-bit-secret")
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	return tokenString, nil
 }
 
 func tokenHandler(w http.ResponseWriter, r *http.Request) {
@@ -68,9 +106,22 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Return a static token response
+	// Generate a real JWT token
+	tokenString, err := generateToken()
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(TokenError{
+			Error:            "server_error",
+			ErrorDescription: "Failed to generate token",
+		})
+		slog.Error("Failed to generate token", "error", err)
+		return
+	}
+
+	// Return the token response
 	response := TokenResponse{
-		AccessToken: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiZXhwIjoxNTE2MjM5MDIyfQ",
+		AccessToken: tokenString,
 		TokenType:   "Bearer",
 		ExpiresIn:   3600,
 	}
