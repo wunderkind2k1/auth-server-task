@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- GitHub Actions workflow for basic branch builds
 - Environment variable configuration for JWT secret key
 - JWT token generation using golang-jwt library
 - Basic Authentication validation for client credentials
