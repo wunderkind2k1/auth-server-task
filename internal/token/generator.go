@@ -1,6 +1,7 @@
 package token
 
 import (
+	"crypto/rsa"
 	"log/slog"
 	"time"
 
@@ -16,13 +17,13 @@ type CustomClaims struct {
 
 // Generator handles JWT token generation
 type Generator struct {
-	secretKey []byte
+	privateKey *rsa.PrivateKey
 }
 
 // NewGenerator creates a new token generator
-func NewGenerator(secretKey string) *Generator {
+func NewGenerator(privateKey *rsa.PrivateKey) *Generator {
 	return &Generator{
-		secretKey: []byte(secretKey),
+		privateKey: privateKey,
 	}
 }
 
@@ -42,10 +43,10 @@ func (g *Generator) GenerateToken() (string, error) {
 	}
 
 	// Create token with claims
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 
 	// Generate encoded token
-	tokenString, err := token.SignedString(g.secretKey)
+	tokenString, err := token.SignedString(g.privateKey)
 	if err != nil {
 		slog.Error("failed to sign JWT token", "error", err)
 		return "", err

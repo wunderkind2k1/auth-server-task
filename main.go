@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/rsa"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -12,17 +13,32 @@ import (
 )
 
 var (
-	secretKey string
-	userPool  map[string]string
+	keyPair  *rsa.PrivateKey
+	userPool map[string]string
 )
 
 func setup() {
-	secretKey = os.Getenv("JWT_SECRET_KEY")
-	if secretKey == "" {
-		slog.Error("Mandatory JWT_SECRET_KEY environment variable is not set")
+	// Get key file path from environment variable
+	keyFilePath := os.Getenv("JWT_SIGNATURE_KEY_FILE")
+	if keyFilePath == "" {
+		slog.Error("Mandatory JWT_SIGNATURE_KEY_FILE environment variable is not set")
 		os.Exit(1)
 	}
-	slog.Info("Mandatory JWT_SECRET_KEY environment variable is set")
+
+	// Ensure the key file exists
+	if _, err := os.Stat(keyFilePath); os.IsNotExist(err) {
+		slog.Error("Mandatory JWT signature key file does not exist", "path", keyFilePath)
+		os.Exit(1)
+	}
+
+	// Load the private key
+	var err error
+	keyPair, err = token.LoadPrivateKey(keyFilePath)
+	if err != nil {
+		slog.Error("Failed to load private key", "error", err, "path", keyFilePath)
+		os.Exit(1)
+	}
+	slog.Info("Private key loaded successfully", "path", keyFilePath)
 
 	// Initialize user pool with default test users
 	userPool = userpool.Default()
@@ -62,7 +78,7 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Create token generator
-	generator := token.NewGenerator(secretKey)
+	generator := token.NewGenerator(keyPair)
 
 	// Generate a real JWT token
 	tokenString, err := generator.GenerateToken()

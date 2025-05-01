@@ -2,22 +2,22 @@
 
 ## Core Requirements Status
 
-### OAuth2 Server Implementation (RFC 6749)
+### OAuth2 Server Implementation ([RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749))
 - [x] Create Golang HTTP server
 - [x] Implement Client Credentials Grant flow
 - [x] Basic Authentication support
 - [x] `/token` endpoint implementation
 - [x] Proper error responses according to RFC 6749
 
-### JWT Implementation (RFC 7519)
+### JWT Implementation ([RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519))
 - [x] JWT token generation
 - [x] Required claims implementation (exp, iat, nbf, iss, sub)
 - [x] Token expiration handling
 - [ ] RS256 key signing (currently using HS256)
 
 ### Additional Required Endpoints
-- [ ] JWK endpoint (RFC 7517)
-- [ ] Token introspection endpoint (RFC 7662)
+- [ ] JWK endpoint ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
+- [ ] Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
 
 ### Deployment
 - [ ] Kubernetes deployment manifests
@@ -42,7 +42,7 @@
    - Test utilities for token endpoint
    - Basic documentation
    - GitHub Actions workflow
-   - Changelog maintenance
+   - [Changelog](CHANGELOG.md) maintenance
 
 ### Pending Features
 1. **Security Enhancements**
