@@ -13,7 +13,7 @@
 - [x] JWT token generation
 - [x] Required claims implementation (exp, iat, nbf, iss, sub)
 - [x] Token expiration handling
-- [ ] RS256 key signing (currently using HS256)
+- [x] RS256 key signing (implemented with dedicated key management)
 
 ### Additional Required Endpoints
 - [ ] JWK endpoint ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
@@ -35,8 +35,8 @@
 2. **JWT Token Generation**
    - Token structure with required claims
    - Token expiration handling
-   - Secure secret key management
-   - HS256 signing implementation
+   - RS256 signing with dedicated key management
+   - Secure key storage and loading
 
 3. **Testing and Documentation**
    - Test utilities for token endpoint
@@ -46,7 +46,6 @@
 
 ### Pending Features
 1. **Security Enhancements**
-   - Switch from HS256 to RS256 signing
    - Implement rate limiting
    - Add token revocation mechanism
 
