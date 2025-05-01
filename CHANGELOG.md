@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- User pool implementation for managing client credentials
+- Documentation for user pool configuration and management
+- Default test user credentials for development
 - GitHub Actions workflow for basic branch builds
 - Environment variable configuration for JWT secret key
 - JWT token generation using golang-jwt library
@@ -22,10 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial project setup
 
 ### Changed
-  - Enhanced error logging using slog throughout the application
-  - Moved JWT secret key to environment variable configuration
-  - Refactored authentication and token handling into internal packages:
+- Extracted user management into dedicated `internal/userpool` package
+- Updated README with user pool configuration details
+- Enhanced error logging using slog throughout the application
+- Moved JWT secret key to environment variable configuration
+- Refactored authentication and token handling into internal packages:
   - Moved token generation to `internal/token` package
   - Moved Basic Auth handling to `internal/auth` package
-  - Improved error handling and response formatting
-  - Better separation of concerns and code organization
+- Improved error handling and response formatting
+- Better separation of concerns and code organization

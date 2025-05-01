@@ -8,16 +8,28 @@ import (
 )
 
 var (
-	ErrMissingHeader     = errors.New("authorization header required")
-	ErrInvalidFormat     = errors.New("invalid authorization header format")
-	ErrInvalidBase64     = errors.New("invalid base64 encoding in credentials")
-	ErrInvalidAuthScheme = errors.New("invalid authorization scheme")
+	ErrMissingHeader      = errors.New("authorization header required")
+	ErrInvalidFormat      = errors.New("invalid authorization header format")
+	ErrInvalidBase64      = errors.New("invalid base64 encoding in credentials")
+	ErrInvalidAuthScheme  = errors.New("invalid authorization scheme")
+	ErrInvalidCredentials = errors.New("invalid username or password")
 )
+
+// UserPool represents a collection of users and their credentials
+type UserPool map[string]string
 
 // BasicAuth represents basic authentication credentials
 type BasicAuth struct {
 	Username string
 	Password string
+	pool     map[string]string
+}
+
+// NewBasicAuth creates a new BasicAuth instance with a user pool
+func NewBasicAuth(userpool map[string]string) *BasicAuth {
+	return &BasicAuth{
+		pool: userpool,
+	}
 }
 
 // ErrorResponse represents an authentication error response
@@ -44,6 +56,11 @@ func GetErrorResponse(err error) ErrorResponse {
 			Error:            "invalid_client",
 			ErrorDescription: "Invalid credentials",
 		}
+	case ErrInvalidCredentials:
+		return ErrorResponse{
+			Error:            "invalid_client",
+			ErrorDescription: "Invalid username or password",
+		}
 	default:
 		return ErrorResponse{
 			Error:            "invalid_client",
@@ -53,7 +70,7 @@ func GetErrorResponse(err error) ErrorResponse {
 }
 
 // ParseBasicAuth validates the Authorization header for Basic Auth
-func ParseBasicAuth(authHeader string) error {
+func (ba *BasicAuth) ParseBasicAuth(authHeader string) error {
 	if authHeader == "" {
 		slog.Error(ErrMissingHeader.Error())
 		return ErrMissingHeader
@@ -78,6 +95,17 @@ func ParseBasicAuth(authHeader string) error {
 		slog.Error(ErrInvalidFormat.Error())
 		return ErrInvalidFormat
 	}
+
+	// Validate credentials against the user pool
+	storedPassword, exists := ba.pool[credentials[0]]
+	if !exists || storedPassword != credentials[1] {
+		slog.Error(ErrInvalidCredentials.Error(), "username", credentials[0])
+		return ErrInvalidCredentials
+	}
+
+	// Store the validated credentials
+	ba.Username = credentials[0]
+	ba.Password = credentials[1]
 
 	return nil
 }
