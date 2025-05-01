@@ -8,9 +8,13 @@ import (
 
 	"oauth2-task/internal/auth"
 	"oauth2-task/internal/token"
+	"oauth2-task/internal/userpool"
 )
 
-var secretKey string
+var (
+	secretKey string
+	userPool  map[string]string
+)
 
 func setup() {
 	secretKey = os.Getenv("JWT_SECRET_KEY")
@@ -19,6 +23,9 @@ func setup() {
 		os.Exit(1)
 	}
 	slog.Info("Mandatory JWT_SECRET_KEY environment variable is set")
+
+	// Initialize user pool with default test users
+	userPool = userpool.Default()
 }
 
 // TokenResponse represents the OAuth2 token response
@@ -41,8 +48,11 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Create BasicAuth instance with user pool
+	basicAuth := auth.NewBasicAuth(userPool)
+
 	// Validate Basic Auth
-	if err := auth.ParseBasicAuth(r.Header.Get("Authorization")); err != nil {
+	if err := basicAuth.ParseBasicAuth(r.Header.Get("Authorization")); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusUnauthorized)
 		errorResponse := auth.GetErrorResponse(err)
@@ -59,10 +69,14 @@ func tokenHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(auth.ErrorResponse{
+		err := json.NewEncoder(w).Encode(auth.ErrorResponse{
 			Error:            "server_error",
 			ErrorDescription: "Failed to generate token",
 		})
+		if err != nil {
+			slog.Error("Failed to generate Error Response for token generation", "error", err)
+			return
+		}
 		slog.Error("Failed to generate token", "error", err)
 		return
 	}

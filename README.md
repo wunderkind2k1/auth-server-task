@@ -38,6 +38,26 @@ The server will start on port 8080.
 |----------|-------------|----------|
 | JWT_SECRET_KEY | Secret key used for signing JWT tokens | Yes |
 
+### User Pool Configuration
+
+The server uses a simple in-memory user pool for authentication. By default, it includes a test user with the following credentials:
+- Client ID: `sho`
+- Client Secret: `test123`
+
+To modify the user pool, you can edit the `internal/userpool/default.go` file. The user pool is implemented as a simple map structure where you can add, remove, or modify users. Each user requires a client ID and client secret.
+
+Example of adding a new user:
+```go
+func Default() map[string]string {
+    return map[string]string{
+        "sho": "test123",
+        "new-user": "new-secret",
+    }
+}
+```
+
+Note: In a production environment, you should implement a more secure and persistent storage solution for user credentials.
+
 ## API Endpoints
 
 ### Token Endpoint
