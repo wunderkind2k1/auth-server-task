@@ -4,11 +4,11 @@ A simple OAuth2 server implementation in Go that supports the Client Credentials
 
 ## Features
 
-- OAuth2 Client Credentials Grant flow (RFC 6749)
-- JWT Access Token issuance (RFC 7519)
+- OAuth2 Client Credentials Grant flow ([RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749))
+- JWT Access Token issuance ([RFC 7519](https://datatracker.ietf.org/doc/html/rfc7519)) with RS256 signing
 - Basic Authentication for client credentials
-- Token introspection endpoint (RFC 7662)
-- JWK endpoint for signing keys (RFC 7517)
+- Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
+- JWK endpoint for signing keys ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
 
 ## Prerequisites
 
@@ -23,9 +23,15 @@ git clone https://github.com/wunderkind2k1/auth-server-task.git
 cd auth-server-task
 ```
 
+2. Generate an RSA key pair for JWT signing:
 ```bash
-JWT_SECRET_KEY="your-secure-256-bit-secret" go run main.go
+cd pkg/keys
+make run-generate
+```
 
+3. Start the server with the generated key:
+```bash
+JWT_SIGNATURE_KEY_FILE=pkg/keys/keys/<keyID>.private.pem go run main.go
 ```
 
 The server will start on port 8080.
@@ -36,7 +42,16 @@ The server will start on port 8080.
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| JWT_SECRET_KEY | Secret key used for signing JWT tokens | Yes |
+| JWT_SIGNATURE_KEY_FILE | Path to the RSA private key file for JWT signing | Yes |
+
+### Key Management
+
+The project includes a separate key management tool in the `pkg/keys` directory. This tool provides commands for:
+- Generating RSA key pairs
+- Listing available keys
+- Deleting key pairs
+
+For development, you can use the pre-generated test keys in `pkg/keys/keys/`. See [pkg/keys/README.md](pkg/keys/README.md) for more details.
 
 ### User Pool Configuration
 
@@ -44,7 +59,7 @@ The server uses a simple in-memory user pool for authentication. By default, it 
 - Client ID: `sho`
 - Client Secret: `test123`
 
-To modify the user pool, you can edit the `internal/userpool/default.go` file. The user pool is implemented as a simple map structure where you can add, remove, or modify users. Each user requires a client ID and client secret.
+To modify the user pool, you can edit the [`internal/userpool/default.go`](internal/userpool/default.go) file. The user pool is implemented as a simple map structure where you can add, remove, or modify users. Each user requires a client ID and client secret.
 
 Example of adding a new user:
 ```go
@@ -62,7 +77,7 @@ Note: In a production environment, you should implement a more secure and persis
 
 ### Token Endpoint
 
-Issues JWT access tokens using the Client Credentials Grant flow.
+Issues JWT access tokens using the Client Credentials Grant flow. Tokens are signed using RS256.
 
 ```bash
 curl -X POST http://localhost:8080/token \
