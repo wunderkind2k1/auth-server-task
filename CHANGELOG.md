@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- RSA key management tool in `keytool` for JWT signing key generation
 - Package documentation for all internal packages
 - Test utilities for JWKS endpoint testing
 - JWKS endpoint implementation according to RFC 7517
@@ -28,9 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - RS256 signing for JWT tokens
 - Test keys for development and testing purposes
 - CLI interface for key management operations (generate, list, delete)
-- RSA key management tool in `pkg/keys` for JWT signing key generation
 
 ### Changed
+- Restructured project into a monorepo with separate `keytool` and `server` components
+- Updated GitHub Actions workflow to handle multiple Go modules
+- Updated all documentation to reflect new repository structure
 - Added method validation for JWKS endpoint
 - Cleaned up userpool package structure
 - Better separation of concerns and code organization
@@ -45,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Switched from HS256 to RS256 for JWT token signing
 
 ### Deleted
+- Old `pkg/keys` directory structure
 - Obsolete userpool.go file
 - Direct key management in main application
 - Static JWT token response

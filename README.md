@@ -25,13 +25,13 @@ cd auth-server-task
 
 2. Generate an RSA key pair for JWT signing:
 ```bash
-cd pkg/keys
+cd keytool
 make run-generate
 ```
 
 3. Start the server with the generated key:
 ```bash
-JWT_SIGNATURE_KEY_FILE=pkg/keys/keys/<keyID>.private.pem go run main.go
+JWT_SIGNATURE_KEY_FILE=keytool/keys/<keyID>.private.pem go run main.go
 ```
 
 The server will start on port 8080.
@@ -46,12 +46,12 @@ The server will start on port 8080.
 
 ### Key Management
 
-The project includes a separate key management tool in the `pkg/keys` directory. This tool provides commands for:
+The project includes a separate key management tool in the `keytool` directory. This tool provides commands for:
 - Generating RSA key pairs
 - Listing available keys
 - Deleting key pairs
 
-For development, you can use the pre-generated test keys in `pkg/keys/keys/`. See [pkg/keys/README.md](pkg/keys/README.md) for more details.
+For development, you can use the pre-generated test keys in `keytool/keys/`. See [keytool/README.md](keytool/README.md) for more details.
 
 ### User Pool Configuration
 
@@ -59,7 +59,7 @@ The server uses a simple in-memory user pool for authentication. By default, it 
 - Client ID: `sho`
 - Client Secret: `test123`
 
-To modify the user pool, you can edit the [`internal/userpool/default.go`](internal/userpool/default.go) file. The user pool is implemented as a simple map structure where you can add, remove, or modify users. Each user requires a client ID and client secret.
+To modify the user pool, you can edit the [`server/internal/userpool/default.go`](server/internal/userpool/default.go) file. The user pool is implemented as a simple map structure where you can add, remove, or modify users. Each user requires a client ID and client secret.
 
 Example of adding a new user:
 ```go
