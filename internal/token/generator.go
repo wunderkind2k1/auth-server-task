@@ -1,3 +1,6 @@
+// Package token provides JWT token generation and key management functionality.
+// It implements token generation using RSA private keys and handles key loading
+// from files. The package follows JWT standards for token creation and signing.
 package token
 
 import (
