@@ -31,7 +31,15 @@ make run-generate
 
 3. Start the server with the generated key:
 ```bash
-JWT_SIGNATURE_KEY_FILE=keytool/keys/<keyID>.private.pem go run main.go
+# Export the private key content (replace <keyID> with your actual key ID)
+export JWT_SIGNATURE_KEY="$(cat keytool/keys/<keyID>.private.pem)"
+go run server/main.go
+```
+
+Alternatively, you can use the convenience script:
+```bash
+cd server
+./startServer.sh
 ```
 
 The server will start on port 8080.
@@ -42,7 +50,7 @@ The server will start on port 8080.
 
 | Variable | Description | Required |
 |----------|-------------|----------|
-| JWT_SIGNATURE_KEY_FILE | Path to the RSA private key file for JWT signing | Yes |
+| JWT_SIGNATURE_KEY | Content of the RSA private key in PEM format for JWT signing | Yes |
 
 ### Key Management
 
@@ -123,11 +131,17 @@ Response:
 Test scripts are provided to verify the functionality of both endpoints:
 
 ```bash
+# Set the JWT_SIGNATURE_KEY environment variable first
+export JWT_SIGNATURE_KEY="$(cat keytool/keys/<keyID>.private.pem)"
+
 # Test token endpoint
 ./test-utils/test-token-endpoint.sh
 
 # Test JWKS endpoint
 ./test-utils/test-jwks-endpoint.sh
+
+# Test introspection endpoint
+./test-utils/test-introspection-endpoint.sh
 ```
 
 ## Development

@@ -1,7 +1,10 @@
-// Package rsa provides RSA key pair management functionality.
+// Package rsa provides the core functionality for the key management tool.
 // It implements secure generation, storage, and retrieval of RSA key pairs
-// for use in cryptographic operations. The package handles key persistence
-// in PEM format and provides a simple interface for key management operations.
+// specifically designed for JWT signing in the OAuth2 server. The package handles
+// key persistence in PEM format with proper file permissions (0600 for private keys,
+// 0644 for public keys) and provides a simple interface for key management operations.
+// This package is intentionally separate from the main application's key handling
+// to maintain a clear boundary between the key management tool and the server.
 package rsa
 
 import (

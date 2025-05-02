@@ -14,7 +14,7 @@ The key management tool serves several important purposes:
 
 This package is intentionally separated from the main application code to maintain a clear boundary between the core application logic and its supporting tools. While it exists in the same repository (mono repo approach), it should not be imported or used directly by the main application.
 
-The main application uses its own key loading logic in [`internal/token/keyloader.go`](../server/internal/token/keyloader.go) to maintain independence and avoid coupling with this tool.
+The main application uses its own key parsing logic in [`internal/token/keyloader.go`](../server/internal/token/keyloader.go) to maintain independence and avoid coupling with this tool.
 
 ## Test Keys
 
@@ -57,7 +57,7 @@ Available commands:
 
 ## Usage in Main Application
 
-The main application expects a private key file to be available at the path specified by the `JWT_SIGNATURE_KEY_FILE` environment variable. This file should be generated using this tool:
+The main application expects the private key content to be available in the `JWT_SIGNATURE_KEY` environment variable. This content should be the PEM-encoded private key generated using this tool:
 
 1. Generate a key pair:
 ```bash
@@ -67,11 +67,13 @@ make run-generate
 
 2. Use the generated private key in the main application:
 ```bash
-JWT_SIGNATURE_KEY_FILE=keytool/keys/<keyID>.private.pem go run ../server/main.go
+# Export the private key content
+export JWT_SIGNATURE_KEY="$(cat keys/<keyID>.private.pem)"
+go run ../server/main.go
 ```
 
 For development, you can also use the pre-generated test keys in the [`keys/`](keys/) directory.
 
 ## Enforcing Note on Code Duplication
 
-The key loading logic in the main application ([`internal/token/keyloader.go`](../server/internal/token/keyloader.go)) intentionally duplicates some code from this package. This is by design to maintain separation between the core application and its supporting tools. The main application should be self-contained and not depend on this package.
+The key parsing logic in the main application ([`internal/token/keyloader.go`](../server/internal/token/keyloader.go)) intentionally duplicates some code from this package. This is by design to maintain separation between the core application and its supporting tools. The main application should be self-contained and not depend on this package.
