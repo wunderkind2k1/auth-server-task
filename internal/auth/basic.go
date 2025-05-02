@@ -15,8 +15,8 @@ var (
 	ErrInvalidCredentials = errors.New("invalid username or password")
 )
 
-// UserPool represents a collection of users and their credentials
-type UserPool map[string]string
+// userPool represents a collection of users and their credentials
+type userPool map[string]string
 
 // BasicAuth represents basic authentication credentials
 type BasicAuth struct {

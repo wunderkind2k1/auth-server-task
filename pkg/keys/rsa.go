@@ -1,3 +1,7 @@
+// Package keys provides RSA key pair management functionality.
+// It implements secure generation, storage, and retrieval of RSA key pairs
+// for use in cryptographic operations. The package handles key persistence
+// in PEM format and provides a simple interface for key management operations.
 package keys
 
 import (

@@ -1,3 +1,6 @@
+// Package token provides JWT token generation and key management functionality.
+// It implements token generation using RSA private keys and handles key loading
+// from files. The package follows JWT standards for token creation and signing.
 package token
 
 import (
@@ -7,13 +10,6 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
-
-// CustomClaims represents the JWT claims
-type CustomClaims struct {
-	Sub  string `json:"sub"`
-	Name string `json:"name"`
-	jwt.RegisteredClaims
-}
 
 // Generator handles JWT token generation
 type Generator struct {
@@ -27,19 +23,15 @@ func NewGenerator(privateKey *rsa.PrivateKey) *Generator {
 	}
 }
 
-// GenerateToken creates a new JWT token
-func (g *Generator) GenerateToken() (string, error) {
+// GenerateToken creates a new JWT token for the given username
+func (g *Generator) GenerateToken(username string) (string, error) {
 	// Create the Claims
-	claims := CustomClaims{
-		"1234567890",
-		"John Doe",
-		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
-			Issuer:    "auth-server",
-			Subject:   "1234567890",
-		},
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour)),
+		IssuedAt:  jwt.NewNumericDate(time.Now()),
+		NotBefore: jwt.NewNumericDate(time.Now()),
+		Issuer:    "auth-server",
+		Subject:   username,
 	}
 
 	// Create token with claims

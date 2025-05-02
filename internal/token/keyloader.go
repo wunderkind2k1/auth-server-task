@@ -8,11 +8,35 @@ import (
 	"os"
 )
 
+// KeyPair defines the interface for a pair of cryptographic keys
+type KeyPair interface {
+	// PrivateKey returns the private key
+	PrivateKey() *rsa.PrivateKey
+	// PublicKey returns the public key
+	PublicKey() *rsa.PublicKey
+}
+
+// rsaKeyPair implements KeyPair for RSA keys
+type rsaKeyPair struct {
+	privateKey *rsa.PrivateKey
+	publicKey  *rsa.PublicKey
+}
+
+// PrivateKey returns the RSA private key
+func (k *rsaKeyPair) PrivateKey() *rsa.PrivateKey {
+	return k.privateKey
+}
+
+// PublicKey returns the RSA public key
+func (k *rsaKeyPair) PublicKey() *rsa.PublicKey {
+	return k.publicKey
+}
+
 // LoadPrivateKey reads and parses an RSA private key from a PEM file.
 // Note: This function intentionally duplicates code from pkg/keys package
 // as that package is meant to be a separate tooling utility for key management,
 // while this is the core application logic that should be self-contained.
-func LoadPrivateKey(filePath string) (*rsa.PrivateKey, error) {
+func LoadPrivateKey(filePath string) (KeyPair, error) {
 	// Read the private key file
 	keyData, err := os.ReadFile(filePath)
 	if err != nil {
@@ -31,5 +55,8 @@ func LoadPrivateKey(filePath string) (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("failed to parse private key: %w", err)
 	}
 
-	return privateKey, nil
+	return &rsaKeyPair{
+		privateKey: privateKey,
+		publicKey:  &privateKey.PublicKey,
+	}, nil
 }
