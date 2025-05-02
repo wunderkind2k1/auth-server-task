@@ -3,6 +3,7 @@ package auth
 import (
 	"encoding/base64"
 	"encoding/json"
+	"log/slog"
 	"math/big"
 	"net/http"
 
@@ -27,6 +28,12 @@ type JWKS struct {
 // HandleJWKS returns the JSON Web Key Set for the server
 func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
+			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
 		// Convert RSA public key to JWK format
 		jwk := JWK{
 			Kty: "RSA",
@@ -42,6 +49,10 @@ func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(jwks)
+		if err := json.NewEncoder(w).Encode(jwks); err != nil {
+			slog.Error("Failed to encode JWKS response", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 	}
 }
