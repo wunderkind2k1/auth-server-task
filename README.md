@@ -94,12 +94,40 @@ Response:
 }
 ```
 
-## Testing
+### JWKS Endpoint
 
-A test script is provided to verify the token endpoint functionality:
+Provides the JSON Web Key Set (JWKS) for token verification. The endpoint follows RFC 7517 and only accepts GET requests.
 
 ```bash
+curl -X GET http://localhost:8080/.well-known/jwks.json
+```
+
+Response:
+```json
+{
+  "keys": [
+    {
+      "kty": "RSA",
+      "use": "sig",
+      "kid": "1",
+      "alg": "RS256",
+      "n": "...",
+      "e": "..."
+    }
+  ]
+}
+```
+
+## Testing
+
+Test scripts are provided to verify the functionality of both endpoints:
+
+```bash
+# Test token endpoint
 ./test-utils/test-token-endpoint.sh
+
+# Test JWKS endpoint
+./test-utils/test-jwks-endpoint.sh
 ```
 
 ## Development

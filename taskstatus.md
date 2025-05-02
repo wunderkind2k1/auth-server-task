@@ -16,7 +16,7 @@
 - [x] RS256 key signing (implemented with dedicated key management)
 
 ### Additional Required Endpoints
-- [ ] JWK endpoint ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
+- [x] JWK endpoint ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
 - [ ] Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
 
 ### Deployment
@@ -38,8 +38,15 @@
    - RS256 signing with dedicated key management
    - Secure key storage and loading
 
-3. **Testing and Documentation**
+3. **JWK Implementation**
+   - JWKS endpoint implementation
+   - Test utilities for JWKS endpoint
+   - Method validation (GET only)
+   - Proper error handling and logging
+
+4. **Testing and Documentation**
    - Test utilities for token endpoint
+   - Test utilities for JWKS endpoint
    - Basic documentation
    - GitHub Actions workflow
    - [Changelog](CHANGELOG.md) maintenance
@@ -50,7 +57,6 @@
    - Add token revocation mechanism
 
 2. **Required Endpoints**
-   - JWK endpoint for signing keys
    - Token introspection endpoint
 
 3. **Deployment**
@@ -58,9 +64,7 @@
    - Production-ready configuration
 
 ## Next Steps
-1. Implement RS256 key generation and management
-2. Add JWK endpoint for signing keys
-3. Implement token introspection endpoint
-4. Create Kubernetes deployment manifests
-5. Add rate limiting and token revocation
-6. Enhance security measures for production use
+1. Implement token introspection endpoint
+2. Create Kubernetes deployment manifests
+3. Add rate limiting and token revocation
+4. Enhance security measures for production use
