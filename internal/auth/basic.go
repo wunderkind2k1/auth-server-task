@@ -1,7 +1,6 @@
 package auth
 
 import (
-	"crypto/rsa"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -129,7 +128,7 @@ type tokenError struct {
 }
 
 // HandleToken processes OAuth2 token requests
-func HandleToken(keyPair *rsa.PrivateKey, userPool map[string]string) http.HandlerFunc {
+func HandleToken(keyPair token.KeyPair, userPool map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -151,7 +150,7 @@ func HandleToken(keyPair *rsa.PrivateKey, userPool map[string]string) http.Handl
 		}
 
 		// Create token generator
-		generator := token.NewGenerator(keyPair)
+		generator := token.NewGenerator(keyPair.PrivateKey())
 
 		// Generate a real JWT token
 		tokenString, err := generator.GenerateToken()

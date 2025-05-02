@@ -1,8 +1,12 @@
 package auth
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"math/big"
 	"net/http"
+
+	"oauth2-task/internal/token"
 )
 
 // JWK represents a JSON Web Key as defined in RFC 7517
@@ -21,13 +25,23 @@ type JWKS struct {
 }
 
 // HandleJWKS returns the JSON Web Key Set for the server
-func HandleJWKS(w http.ResponseWriter, r *http.Request) {
-	// For now, return an empty key set
-	// TODO: Implement actual key retrieval from the key store
-	jwks := JWKS{
-		Keys: []JWK{},
-	}
+func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Convert RSA public key to JWK format
+		jwk := JWK{
+			Kty: "RSA",
+			Use: "sig",
+			Kid: "1", // TODO: Implement proper key ID generation
+			Alg: "RS256",
+			N:   base64.RawURLEncoding.EncodeToString(keyPair.PublicKey().N.Bytes()),
+			E:   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(keyPair.PublicKey().E)).Bytes()),
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(jwks)
+		jwks := JWKS{
+			Keys: []JWK{jwk},
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(jwks)
+	}
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/rsa"
 	"log/slog"
 	"net/http"
 	"os"
@@ -12,7 +11,7 @@ import (
 )
 
 var (
-	keyPair  *rsa.PrivateKey
+	keyPair  token.KeyPair
 	userPool map[string]string
 )
 
@@ -48,7 +47,7 @@ func main() {
 	server := &http.Server{Addr: ":8080"}
 	slog.Info("Starting server", "port", 8080)
 	http.HandleFunc("/token", auth.HandleToken(keyPair, userPool))
-	http.HandleFunc("/.well-known/jwks.json", auth.HandleJWKS)
+	http.HandleFunc("/.well-known/jwks.json", auth.HandleJWKS(keyPair))
 	if err := server.ListenAndServe(); err != nil {
 		slog.Error("Failed to start server", "error", err)
 	}
