@@ -153,7 +153,7 @@ func HandleToken(keyPair token.KeyPair, userPool map[string]string) http.Handler
 		generator := token.NewGenerator(keyPair.PrivateKey())
 
 		// Generate a real JWT token
-		tokenString, err := generator.GenerateToken()
+		tokenString, err := generator.GenerateToken(basicAuth.Username)
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusInternalServerError)
