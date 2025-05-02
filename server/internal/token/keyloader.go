@@ -60,3 +60,18 @@ func LoadPrivateKey(filePath string) (KeyPair, error) {
 		publicKey:  &privateKey.PublicKey,
 	}, nil
 }
+
+// ParsePrivateKey parses an RSA private key from raw bytes.
+// The bytes should be the raw content of a PKCS#1 private key.
+func ParsePrivateKey(keyBytes []byte) (KeyPair, error) {
+	// Parse private key
+	privateKey, err := x509.ParsePKCS1PrivateKey(keyBytes)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private key: %w", err)
+	}
+
+	return &rsaKeyPair{
+		privateKey: privateKey,
+		publicKey:  &privateKey.PublicKey,
+	}, nil
+}

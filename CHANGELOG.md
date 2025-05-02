@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Token introspection endpoint implementation according to RFC 7662
+- Test utilities for token introspection endpoint
+- Convenience script `startServer.sh` for quick server startup during development
 - RSA key management tool in `keytool` for JWT signing key generation
 - Package documentation for all internal packages
 - Test utilities for JWKS endpoint testing
@@ -31,6 +34,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI interface for key management operations (generate, list, delete)
 
 ### Changed
+- Improved security by using environment variable for JWT signing key content instead of file path
+- Updated package documentation to reflect token introspection functionality
+- Enhanced key parsing logic to support environment variable-based configuration
 - Restructured project into a monorepo with separate `keytool` and `server` components
 - Updated GitHub Actions workflow to handle multiple Go modules
 - Updated all documentation to reflect new repository structure

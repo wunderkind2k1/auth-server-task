@@ -17,7 +17,7 @@
 
 ### Additional Required Endpoints
 - [x] JWK endpoint ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
-- [ ] Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
+- [x] Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
 
 ### Deployment
 - [ ] Kubernetes deployment manifests
@@ -44,9 +44,16 @@
    - Method validation (GET only)
    - Proper error handling and logging
 
-4. **Testing and Documentation**
+4. **Token Introspection**
+   - Introspection endpoint implementation (RFC 7662)
+   - Token validation and claims extraction
+   - Test utilities for introspection endpoint
+   - Proper error handling and logging
+
+5. **Testing and Documentation**
    - Test utilities for token endpoint
    - Test utilities for JWKS endpoint
+   - Test utilities for introspection endpoint
    - Basic documentation
    - GitHub Actions workflow
    - [Changelog](CHANGELOG.md) maintenance
@@ -56,15 +63,11 @@
    - Implement rate limiting
    - Add token revocation mechanism
 
-2. **Required Endpoints**
-   - Token introspection endpoint
-
-3. **Deployment**
+2. **Deployment**
    - Kubernetes deployment manifests
    - Production-ready configuration
 
 ## Next Steps
-1. Implement token introspection endpoint
-2. Create Kubernetes deployment manifests
-3. Add rate limiting and token revocation
-4. Enhance security measures for production use
+1. Create Kubernetes deployment manifests
+2. Add rate limiting and token revocation
+3. Enhance security measures for production use

@@ -1,7 +1,8 @@
 // Package auth implements OAuth2 authentication endpoints and JWKS functionality.
-// It provides handlers for token issuance and JSON Web Key Set (JWKS) endpoints
-// as defined in RFC 7517. The package handles Basic Authentication, JWT token
-// generation, and exposes public keys in JWKS format.
+// It provides handlers for token issuance (RFC 6749), token introspection (RFC 7662),
+// and JSON Web Key Set (JWKS) endpoints (RFC 7517). The package handles Basic
+// Authentication, JWT token generation, token validation, and exposes public keys
+// in JWKS format.
 package auth
 
 import (
