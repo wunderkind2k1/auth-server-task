@@ -9,13 +9,19 @@ A simple OAuth2 server implementation in Go that supports the Client Credentials
 - Basic Authentication for client credentials
 - Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
 - JWK endpoint for signing keys ([RFC 7517](https://datatracker.ietf.org/doc/html/rfc7517))
+- Local deployment using k3d (Kubernetes in Docker)
 
 ## Prerequisites
 
 - Go 1.21 or later
 - Make (optional, for using Makefile commands)
+- Docker (for local deployment)
+- kubectl (for local deployment)
+- k3d (for local deployment)
 
 ## Getting Started
+
+### Quick Start
 
 1. Clone the repository:
 ```bash
@@ -43,6 +49,34 @@ cd server
 ```
 
 The server will start on port 8080.
+
+### Local Deployment with k3d
+
+For a more production-like environment, you can deploy the server using k3d:
+
+1. Create a local Kubernetes cluster:
+```bash
+cd deployment/local
+./manage-cluster.sh create
+```
+
+2. Set up the JWT secret:
+```bash
+./setup-secret.sh
+```
+
+3. Build and deploy the application:
+```bash
+./rebuildServerImage.sh
+./deploy.sh
+```
+
+4. Verify the deployment:
+```bash
+./check-deployment.sh
+```
+
+The server will be accessible at `http://localhost:8080`. See [deployment/local/README.md](deployment/local/README.md) for detailed deployment instructions.
 
 ## Configuration
 
