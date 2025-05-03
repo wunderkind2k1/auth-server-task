@@ -75,3 +75,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HS256 signing implementation
 
 ## [Unreleased]
+
+### Changed
+- Improved README organization and clarity:
+  - Reordered sections for better flow
+  - Categorized prerequisites by purpose
+  - Added links to prerequisite tools
+  - Added comprehensive token introspection endpoint documentation
+  - Enhanced API endpoint documentation with examples
