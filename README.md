@@ -223,6 +223,12 @@ export JWT_SIGNATURE_KEY="$(cat keytool/keys/<keyID>.private.pem)"
 
 The project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and maintains a [CHANGELOG.md](CHANGELOG.md) following the [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format.
 
+### Enforcing Note on Code Duplication
+
+As Rob Pike famously said in his talk ["Go Proverbs"](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=9m28s), "A little copying is better than a little dependency." This principle is applied in our codebase, particularly in the key management implementation, where we intentionally maintain some code duplication between the main application and the key management tool to avoid tight coupling.
+
+The key parsing logic in the main application ([`internal/token/keyloader.go`](../server/internal/token/keyloader.go)) intentionally duplicates some code from this package. This is by design to maintain separation between the core application and its supporting tools. The main application should be self-contained and not depend on this package.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
