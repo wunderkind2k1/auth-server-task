@@ -8,6 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Local deployment setup using k3d (Kubernetes in Docker)
+- Deployment scripts for local development:
+  - `manage-cluster.sh` for k3d cluster management
+  - `deploy.sh` for application deployment
+  - `check-deployment.sh` for deployment verification
+  - `setup-secret.sh` for JWT key management
+  - `rebuildServerImage.sh` for Docker image building
+- Kubernetes manifests for local deployment
+- Documentation for local deployment setup and usage
 - Token introspection endpoint implementation according to RFC 7662
 - Test utilities for token introspection endpoint
 - Convenience script `startServer.sh` for quick server startup during development
@@ -34,6 +43,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI interface for key management operations (generate, list, delete)
 
 ### Changed
+- Improved local development experience with k3d-based deployment
+- Enhanced deployment verification with comprehensive checks
+- Updated documentation to include local deployment instructions
 - Improved security by using environment variable for JWT signing key content instead of file path
 - Updated package documentation to reflect token introspection functionality
 - Enhanced key parsing logic to support environment variable-based configuration
