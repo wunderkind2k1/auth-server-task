@@ -32,6 +32,8 @@ type JWKS struct {
 // HandleJWKS returns the JSON Web Key Set for the server
 func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Received JWKS request", "method", r.Method, "path", r.URL.Path)
+
 		if r.Method != http.MethodGet {
 			slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -58,5 +60,6 @@ func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
 			http.Error(w, "Internal server error", http.StatusInternalServerError)
 			return
 		}
+		slog.Info("Successfully sent JWKS response")
 	}
 }
