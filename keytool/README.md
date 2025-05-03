@@ -76,4 +76,6 @@ For development, you can also use the pre-generated test keys in the [`keys/`](k
 
 ## Enforcing Note on Code Duplication
 
+As Rob Pike famously said in his talk ["Go Proverbs"](https://www.youtube.com/watch?v=PAAkCSZUG1c&t=9m28s), "A little copying is better than a little dependency." This principle is applied in our codebase, particularly in with this key management implementation, where we intentionally maintain some code duplication between the main application and the key management tool to avoid tight coupling.
+
 The key parsing logic in the main application ([`internal/token/keyloader.go`](../server/internal/token/keyloader.go)) intentionally duplicates some code from this package. This is by design to maintain separation between the core application and its supporting tools. The main application should be self-contained and not depend on this package.

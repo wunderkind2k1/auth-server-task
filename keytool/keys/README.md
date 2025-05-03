@@ -1,6 +1,6 @@
 # Test Keys Directory
 
-This directory contains RSA key pairs that are provided for development and testing purposes only. These keys are:
+This directory contains RSA a key pair that is provided for development and testing purposes only. These keys are:
 
 - Convenient for local development
 - Ready to use for testing the JWT signing functionality
@@ -18,7 +18,7 @@ The keys in this directory follow the standard naming convention:
 To use these test keys with the main application during development:
 
 ```bash
-JWT_SIGNATURE_KEY_FILE=keytool/keys/<keyID>.private.pem go run ../server/main.go
+JWT_SIGNATURE_KEY="$(cat keytool/keys/<keyID>.private.pem) go run ../server/main.go
 ```
 
 ## Important Notes
