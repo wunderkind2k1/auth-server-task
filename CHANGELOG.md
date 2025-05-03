@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Extracted user management into dedicated `internal/userpool` package
 - Updated JWT token generation to use RSA private keys
 - Switched from HS256 to RS256 for JWT token signing
+- Suppressed Docker images in git to reduce repository size
 
 ### Deleted
 - Old `pkg/keys` directory structure
