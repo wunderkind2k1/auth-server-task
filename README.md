@@ -13,11 +13,16 @@ A simple OAuth2 server implementation in Go that supports the Client Credentials
 
 ## Prerequisites
 
-- Go 1.21 or later
-- Make (optional, for using Makefile commands)
-- Docker (for local deployment)
-- kubectl (for local deployment)
-- k3d (for local deployment)
+### Core Requirements
+- [Go](https://golang.org/dl/) 1.21 or later (required for building and running the server)
+
+### Development Tools
+- [Make](https://www.gnu.org/software/make/) (optional, for using Makefile commands in keytool)
+
+### Local Kubernetes Deployment
+- [Docker](https://docs.docker.com/get-docker/) (required for building and running containers)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (required for Kubernetes cluster interaction)
+- [k3d](https://k3d.io/v5.6.0/#installation) (required for local Kubernetes cluster)
 
 ## Getting Started
 
@@ -49,34 +54,6 @@ cd server
 ```
 
 The server will start on port 8080.
-
-### Local Deployment with k3d
-
-For a more production-like environment, you can deploy the server using k3d:
-
-1. Create a local Kubernetes cluster:
-```bash
-cd deployment/local
-./manage-cluster.sh create
-```
-
-2. Set up the JWT secret:
-```bash
-./setup-secret.sh
-```
-
-3. Build and deploy the application:
-```bash
-./rebuildServerImage.sh
-./deploy.sh
-```
-
-4. Verify the deployment:
-```bash
-./check-deployment.sh
-```
-
-The server will be accessible at `http://localhost:8080`. See [deployment/local/README.md](deployment/local/README.md) for detailed deployment instructions.
 
 ## Configuration
 
@@ -114,6 +91,34 @@ func Default() map[string]string {
 ```
 
 Note: In a production environment, you should implement a more secure and persistent storage solution for user credentials.
+
+### Local Deployment with k3d
+
+For a more production-like environment, you can deploy the server using k3d:
+
+1. Create a local Kubernetes cluster:
+```bash
+cd deployment/local
+./manage-cluster.sh create
+```
+
+2. Set up the JWT secret:
+```bash
+./setup-secret.sh
+```
+
+3. Build and deploy the application:
+```bash
+./rebuildServerImage.sh
+./deploy.sh
+```
+
+4. Verify the deployment:
+```bash
+./check-deployment.sh
+```
+
+The server will be accessible at `http://localhost:8080`. See [deployment/local/README.md](deployment/local/README.md) for detailed deployment instructions.
 
 ## API Endpoints
 
@@ -157,6 +162,42 @@ Response:
       "e": "..."
     }
   ]
+}
+```
+
+### Token Introspection Endpoint
+
+Validates and provides information about an access token. The endpoint follows RFC 7662 and requires Basic Authentication.
+
+```bash
+curl -X POST http://localhost:8080/introspect \
+  -H "Authorization: Basic $(echo -n 'client_id:client_secret' | base64)" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+```
+
+Response for valid token:
+```json
+{
+  "active": true,
+  "scope": "",
+  "client_id": "sho",
+  "username": "sho",
+  "token_type": "Bearer",
+  "exp": 1735689600,
+  "iat": 1735686000,
+  "nbf": 1735686000,
+  "sub": "sho",
+  "aud": [],
+  "iss": "https://oauth2-server",
+  "jti": "unique-token-id"
+}
+```
+
+Response for invalid token:
+```json
+{
+  "active": false
 }
 ```
 
