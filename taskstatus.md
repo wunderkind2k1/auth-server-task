@@ -20,7 +20,16 @@
 - [x] Token introspection endpoint ([RFC 7662](https://datatracker.ietf.org/doc/html/rfc7662))
 
 ### Deployment
-- [ ] Kubernetes deployment manifests
+- [x] Kubernetes deployment manifests
+  - [x] Local deployment with k3d
+  - [x] Service configuration
+  - [x] Secret management for JWT keys
+  - [x] Deployment scripts and documentation
+  - [x] Docker image building and management
+    - [x] Multi-stage build for minimal image size
+    - [x] Distroless base image for security
+    - [x] Build script for local development
+    - [x] Image versioning and tagging
 
 ## Detailed Implementation Status
 
@@ -58,16 +67,24 @@
    - GitHub Actions workflow
    - [Changelog](CHANGELOG.md) maintenance
 
+6. **Deployment**
+   - Kubernetes deployment manifests
+   - Local k3d cluster setup
+   - Deployment scripts and utilities
+   - Service configuration
+   - Secret management
+   - Comprehensive deployment documentation
+   - Docker image building and management
+     - Multi-stage build process
+     - Security-focused base image
+     - Build automation scripts
+     - Image versioning strategy
+
 ### Pending Features
 1. **Security Enhancements**
    - Implement rate limiting
    - Add token revocation mechanism
 
-2. **Deployment**
-   - Kubernetes deployment manifests
-   - Production-ready configuration
-
 ## Next Steps
-1. Create Kubernetes deployment manifests
-2. Add rate limiting and token revocation
-3. Enhance security measures for production use
+1. Add rate limiting and token revocation
+2. Enhance security measures for production use
