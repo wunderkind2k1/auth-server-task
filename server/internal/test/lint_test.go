@@ -7,7 +7,6 @@ import (
 
 // TestLintIssues is a test with intentional linting issues
 func TestLintIssues(t *testing.T) {
-	var unusedVar string // should trigger unused variable warning
 	fmt.Println("This is a test with linting issues")
 
 	// should trigger error handling warning
