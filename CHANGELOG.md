@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Initial test coverage for token introspection
+  - HTTP method validation (POST-only as per RFC 7662)
+  - Token extraction from request
+  - Token validation and signing method checks
+  - Error response handling
+- Initial test coverage for basic auth functionality
+- Extracted HTTP method validation into a dedicated function
+- Improved error response handling for token validation failures
+- Added linting merge gate to GitHub Actions workflow:
+  - Configured to run on all pushes and PRs
+  - Acts as a merge gate for main branch
+  - Allows feature branch pushes even with linting issues
+- Added GitHub Actions workflow documentation:
+  - Created `.github/workflows/README.md` with detailed workflow explanations
+  - Added CI/CD section to main README.md
+- Added deployment management scripts:
+  - `scale.sh` for scaling the OAuth2 server deployment
+  - `undeploy.sh` for removing the deployment
+- Added golangci-lint configuration for code quality
+- Added Makefile with common development commands
+- Added comprehensive token introspection endpoint tests
+- Added proper error handling for token introspection according to RFC 7662
+- Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
+
+### Changed
+- Updated Go version requirement to 1.24
+- Improved key file naming consistency in RSA key management
+- Enhanced error handling in key management operations
+- Centralized response handling in token introspection
+- Improved documentation with proper package comments
+- Enhanced security with proper file permissions for key files
+- Added proper error handling for JSON encoding failures
+- Improved server configuration with read header timeout
+- Improved README organization and clarity:
+  - Reordered sections for better flow
+  - Categorized prerequisites by purpose
+  - Added links to prerequisite tools
+  - Added comprehensive token introspection endpoint documentation
+  - Enhanced API endpoint documentation with examples
+
+### Fixed
+- Fixed token introspection response for invalid tokens (now returns 200 with active=false)
+- Fixed key file naming inconsistency in RSA key management
+- Fixed error handling in token introspection endpoint
+- Fixed potential security issues with file permissions
+- Fixed error handling in JSON response encoding
+
 ## [0.0.9] - 2024-05-03
 
 ### Added
@@ -73,45 +123,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Static JWT token response
 - JWT secret key environment variable configuration
 - HS256 signing implementation
-
-## [Unreleased]
-
-### Added
-- Added linting merge gate to GitHub Actions workflow:
-  - Configured to run on all pushes and PRs
-  - Acts as a merge gate for main branch
-  - Allows feature branch pushes even with linting issues
-- Added GitHub Actions workflow documentation:
-  - Created `.github/workflows/README.md` with detailed workflow explanations
-  - Added CI/CD section to main README.md
-- Added deployment management scripts:
-  - `scale.sh` for scaling the OAuth2 server deployment
-  - `undeploy.sh` for removing the deployment
-- Added golangci-lint configuration for code quality
-- Added Makefile with common development commands
-- Added comprehensive token introspection endpoint tests
-- Added proper error handling for token introspection according to RFC 7662
-- Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
-
-### Changed
-- Updated Go version requirement to 1.24
-- Improved key file naming consistency in RSA key management
-- Enhanced error handling in key management operations
-- Centralized response handling in token introspection
-- Improved documentation with proper package comments
-- Enhanced security with proper file permissions for key files
-- Added proper error handling for JSON encoding failures
-- Improved server configuration with read header timeout
-- Improved README organization and clarity:
-  - Reordered sections for better flow
-  - Categorized prerequisites by purpose
-  - Added links to prerequisite tools
-  - Added comprehensive token introspection endpoint documentation
-  - Enhanced API endpoint documentation with examples
-
-### Fixed
-- Fixed token introspection response for invalid tokens (now returns 200 with active=false)
-- Fixed key file naming inconsistency in RSA key management
-- Fixed error handling in token introspection endpoint
-- Fixed potential security issues with file permissions
-- Fixed error handling in JSON response encoding

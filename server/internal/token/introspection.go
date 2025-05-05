@@ -2,6 +2,7 @@ package token
 
 import (
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"strings"
@@ -15,8 +16,8 @@ type ErrorResponse struct {
 	ErrorDescription string `json:"error_description,omitempty"`
 }
 
-// IntrospectionResponse represents the OAuth2 token introspection response.
-// As defined in RFC 7662 Section 2.2.
+// IntrospectionResponse represents the OAuth2 token introspection response
+// as defined in RFC 7662 Section 2.2.
 type IntrospectionResponse struct {
 	Active    bool   `json:"active"`
 	Scope     string `json:"scope,omitempty"`
@@ -32,14 +33,19 @@ type IntrospectionResponse struct {
 	Jti       string `json:"jti,omitempty"`
 }
 
+// validateSigningMethod validates that the token uses RSA signing method and returns the public key for verification.
+func validateSigningMethod(token *jwt.Token, keyPair KeyPair) (interface{}, error) {
+	// Validate the signing method
+	if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
+		return nil, jwt.ErrSignatureInvalid
+	}
+	return keyPair.PublicKey(), nil
+}
+
 // validateToken parses and validates a JWT token using the provided key pair.
 func validateToken(tokenString string, keyPair KeyPair) (*jwt.Token, error) {
 	return jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
-		// Validate the signing method
-		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, jwt.ErrSignatureInvalid
-		}
-		return keyPair.PublicKey(), nil
+		return validateSigningMethod(token, keyPair)
 	})
 }
 
@@ -61,12 +67,11 @@ func extractTokenFromRequest(r *http.Request) string {
 }
 
 // introspectToken analyzes a validated token and returns the introspection response.
-// if this gets complex, leave std lib and use. e.g. https://github.com/zitadel/zitadel
+// If this gets complex, leave std lib and use. e.g. https://github.com/zitadel/zitadel.
 func introspectToken(parsedToken *jwt.Token) IntrospectionResponse {
 	if !parsedToken.Valid {
 		return IntrospectionResponse{Active: false}
 	}
-
 	claims, ok := parsedToken.Claims.(*jwt.RegisteredClaims)
 	if !ok {
 		return IntrospectionResponse{Active: false}
@@ -103,15 +108,24 @@ func writeIntrospectionError(w http.ResponseWriter, status int, message string) 
 	}
 }
 
-// HandleIntrospection processes token introspection requests.
-// As defined in RFC 7662 Section 2.1.
+// validateHTTPMethod checks if the request method is POST as required by RFC 7662.
+// If the method is not POST, it writes a MethodNotAllowed error response and returns false.
+// Returns true if the method is valid.
+func validateHTTPMethod(w http.ResponseWriter, r *http.Request) bool {
+	if r.Method != http.MethodPost {
+		slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
+		http.Error(w, fmt.Sprintf("Method not allowed: %s", r.Method), http.StatusMethodNotAllowed)
+		return false
+	}
+	return true
+}
+
+// HandleIntrospection processes token introspection requests as defined in RFC 7662 Section 2.1.
 func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Technical: HTTP method validation
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
-			return
+		if !validateHTTPMethod(w, r) {
+			return // Stop if invalid method
 		}
 
 		// Technical: Token extraction
