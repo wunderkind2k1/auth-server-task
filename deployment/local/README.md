@@ -8,53 +8,80 @@ This directory contains scripts and configurations for deploying the OAuth2 serv
 - kubectl
 - k3d (Lightweight Kubernetes distribution)
 
-## Preparations (One-time Setup)
+## Available Scripts
 
-These steps only need to be performed once when setting up the development environment:
+### Cluster Management
+- `manage-cluster.sh`: Manages the k3d cluster
+  - `./manage-cluster.sh create`: Creates a new cluster with port 8080 mapped to the loadbalancer
+  - `./manage-cluster.sh delete`: Deletes the cluster
+  - `./manage-cluster.sh status`: Checks if the cluster is running
 
-1. Create a local Kubernetes cluster:
-   ```bash
-   ./manage-cluster.sh create
-   ```
-   This creates a k3d cluster with port 8080 mapped to the loadbalancer.
+### Deployment
+- `deploy.sh`: Deploys the OAuth2 server to the cluster
+  - Loads the Docker image into the cluster
+  - Applies Kubernetes manifests
+  - Creates necessary resources
 
-2. Set up the JWT secret:
-   ```bash
-   ./setup-secret.sh
-   ```
-   This script creates a Kubernetes secret from the first private key found in the keytool directory.
+- `undeploy.sh`: Removes the OAuth2 server deployment
+  - Deletes the deployment from the cluster
+  - Useful for clean removal without deleting the cluster
 
-   Note: Only run this again if:
-   - Creating a new cluster
-   - Updating the secret with a new key
-   - If the secret was accidentally deleted
+- `scale.sh`: Scales the OAuth2 server deployment
+  - Usage: `REPLICAS=2 ./scale.sh`
+  - Adjusts the number of running pods
+  - Requires REPLICAS environment variable
+
+### Image Management
+- `rebuildServerImage.sh`: Builds and saves the Docker image
+  - Builds the server image
+  - Saves it as a tar file for local use
+  - Run this after code changes
+
+### Configuration
+- `setup-secret.sh`: Sets up the JWT signing key
+  - Creates a Kubernetes secret from the first private key in keytool
+  - Only needed for initial setup or key changes
+
+### Verification
+- `check-deployment.sh`: Verifies the deployment
+  - Checks pod status and readiness
+  - Verifies service availability
+  - Tests loadbalancer and port-forwarding
+  - Validates JWKS endpoint
+
+- `port-forward.sh`: Sets up port forwarding
+  - Forwards local port 8080 to the service
+  - Alternative to loadbalancer access
 
 ## Development Flow
 
-These are the steps you'll repeat during development:
-
-1. Build and save the Docker image (after code changes):
+1. **Initial Setup** (one-time):
    ```bash
+   ./manage-cluster.sh create
+   ./setup-secret.sh
+   ```
+
+2. **Development Cycle**:
+   ```bash
+   # After code changes
    ./rebuildServerImage.sh
-   ```
-   This script builds the Docker image and saves it as a tar file for local use.
-
-2. Deploy the application:
-   ```bash
    ./deploy.sh
-   ```
-   This script loads the saved image into the cluster and applies the Kubernetes manifests.
-
-3. Verify the deployment:
-   ```bash
    ./check-deployment.sh
    ```
-   This script checks:
-   - Pod status and readiness
-   - Service availability
-   - Service accessibility through the k3d loadbalancer
-   - Service accessibility via port-forwarding
-   - JWKS endpoint availability
+
+3. **Scaling** (if needed):
+   ```bash
+   REPLICAS=2 ./scale.sh
+   ```
+
+4. **Cleanup**:
+   ```bash
+   # Remove deployment
+   ./undeploy.sh
+
+   # Or remove entire cluster
+   ./manage-cluster.sh delete
+   ```
 
 ## Security Notes
 
@@ -63,32 +90,22 @@ These are the steps you'll repeat during development:
 
 ## Service Access
 
-The OAuth2 server is exposed as a LoadBalancer service, which means:
-- It's accessible through the k3d loadbalancer at `http://localhost:8080`
-- The service is also accessible via port-forwarding:
-  ```bash
-  kubectl port-forward svc/oauth2-server 8080:8080
-  ```
-- The JWKS endpoint is available at `http://localhost:8080/.well-known/jwks.json`
-
-## Cleanup
-
-To remove the deployment and cluster:
-```bash
-./manage-cluster.sh delete
-```
+The OAuth2 server is exposed as a LoadBalancer service:
+- Access via k3d loadbalancer: `http://localhost:8080`
+- Access via port-forwarding: `kubectl port-forward svc/oauth2-server 8080:8080`
+- JWKS endpoint: `http://localhost:8080/.well-known/jwks.json`
 
 ## Troubleshooting
 
 If you encounter issues:
-1. Check that the cluster is running: `k3d cluster list`
-2. Verify the secret exists: `kubectl get secret jwt-key`
+1. Check cluster status: `k3d cluster list`
+2. Verify secret: `kubectl get secret jwt-key`
 3. Check pod logs: `kubectl logs -l app=oauth2-server`
 4. Check pod status: `kubectl get pods -l app=oauth2-server`
 5. Check service status: `kubectl get svc oauth2-server`
-6. Run the deployment check: `./check-deployment.sh`
+6. Run deployment check: `./check-deployment.sh`
 
 Common issues:
-- If the service is not accessible, check that the k3d loadbalancer is running: `docker ps | grep k3d`
-- If you get a 404 error, verify that the pod is running and the service is configured correctly
-- If you need to recreate the cluster, run `./manage-cluster.sh delete` followed by `./manage-cluster.sh create`
+- Service not accessible: Check k3d loadbalancer with `docker ps | grep k3d`
+- 404 errors: Verify pod and service configuration
+- Cluster recreation: Run `./manage-cluster.sh delete` followed by `./manage-cluster.sh create`

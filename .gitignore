@@ -29,4 +29,5 @@ go.work.sum
 .DS_Store
 
 # no docker image files under git
-docker-image-*.tar
+oauth2-server*.tar
+
