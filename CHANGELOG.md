@@ -77,6 +77,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added linting merge gate to GitHub Actions workflow:
+  - Configured to run on all pushes and PRs
+  - Acts as a merge gate for main branch
+  - Allows feature branch pushes even with linting issues
+- Added GitHub Actions workflow documentation:
+  - Created `.github/workflows/README.md` with detailed workflow explanations
+  - Added CI/CD section to main README.md
 - Added deployment management scripts:
   - `scale.sh` for scaling the OAuth2 server deployment
   - `undeploy.sh` for removing the deployment

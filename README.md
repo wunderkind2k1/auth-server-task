@@ -1,6 +1,6 @@
 # OAuth2 Server
 
-A simple OAuth2 server implementation in Go that supports the Client Credentials Grant flow with Basic Authentication.
+This is a simple OAuth2 server implementation in Go.
 
 ## Features
 
@@ -24,6 +24,17 @@ A simple OAuth2 server implementation in Go that supports the Client Credentials
 - [Docker](https://docs.docker.com/get-docker/) (required for building and running containers)
 - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) (required for Kubernetes cluster interaction)
 - [k3d](https://k3d.io/v5.6.0/#installation) (required for local Kubernetes cluster)
+
+## CI/CD
+
+Our CI/CD pipeline is configured using GitHub Actions and includes:
+
+- Automated linting using golangci-lint
+- Build and test verification
+- Merge gate protection for the main branch
+- Flexible development workflow for feature branches
+
+See [.github/workflows/README.md](.github/workflows/README.md) for detailed information about our workflows and their behavior.
 
 ## Getting Started
 
