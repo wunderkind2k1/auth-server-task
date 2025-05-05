@@ -33,8 +33,7 @@ type IntrospectionResponse struct {
 	Jti       string `json:"jti,omitempty"`
 }
 
-// validateSigningMethod validates that the token uses RSA signing method
-// and returns the public key for verification.
+// validateSigningMethod validates that the token uses RSA signing method and returns the public key for verification.
 func validateSigningMethod(token *jwt.Token, keyPair KeyPair) (interface{}, error) {
 	// Validate the signing method
 	if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
@@ -43,14 +42,14 @@ func validateSigningMethod(token *jwt.Token, keyPair KeyPair) (interface{}, erro
 	return keyPair.PublicKey(), nil
 }
 
-// validateToken parses and validates a JWT token using the provided key pair
+// validateToken parses and validates a JWT token using the provided key pair.
 func validateToken(tokenString string, keyPair KeyPair) (*jwt.Token, error) {
 	return jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return validateSigningMethod(token, keyPair)
 	})
 }
 
-// extractTokenFromRequest extracts the token from either the form data or Authorization header
+// extractTokenFromRequest extracts the token from either the form data or Authorization header.
 func extractTokenFromRequest(r *http.Request) string {
 	// Try form value first
 	token := r.FormValue("token")
@@ -67,8 +66,8 @@ func extractTokenFromRequest(r *http.Request) string {
 	return ""
 }
 
-// introspectToken analyzes a validated token and returns the introspection response
-// if this gets complex, leave std lib and use. e.g. https://github.com/zitadel/zitadel
+// introspectToken analyzes a validated token and returns the introspection response.
+// If this gets complex, leave std lib and use. e.g. https://github.com/zitadel/zitadel.
 func introspectToken(parsedToken *jwt.Token) IntrospectionResponse {
 	if !parsedToken.Valid {
 		return IntrospectionResponse{Active: false}
@@ -121,8 +120,7 @@ func validateHTTPMethod(w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 
-// HandleIntrospection processes token introspection requests
-// as defined in RFC 7662 Section 2.1
+// HandleIntrospection processes token introspection requests as defined in RFC 7662 Section 2.1.
 func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Technical: HTTP method validation
