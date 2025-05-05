@@ -76,7 +76,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added golangci-lint configuration for code quality
+- Added Makefile with common development commands
+- Added comprehensive token introspection endpoint tests
+- Added proper error handling for token introspection according to RFC 7662
+- Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
+
 ### Changed
+- Updated Go version requirement to 1.24
+- Improved key file naming consistency in RSA key management
+- Enhanced error handling in key management operations
+- Centralized response handling in token introspection
+- Improved documentation with proper package comments
+- Enhanced security with proper file permissions for key files
+- Added proper error handling for JSON encoding failures
+- Improved server configuration with read header timeout
 - Improved README organization and clarity:
   - Reordered sections for better flow
   - Categorized prerequisites by purpose
@@ -84,5 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added comprehensive token introspection endpoint documentation
   - Enhanced API endpoint documentation with examples
 
-### Added
-- Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
+### Fixed
+- Fixed token introspection response for invalid tokens (now returns 200 with active=false)
+- Fixed key file naming inconsistency in RSA key management
+- Fixed error handling in token introspection endpoint
+- Fixed potential security issues with file permissions
+- Fixed error handling in JSON response encoding

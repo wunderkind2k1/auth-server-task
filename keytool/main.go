@@ -1,9 +1,13 @@
+// Package main implements a command-line tool for managing RSA key pairs
+// used by the OAuth2 server for JWT signing. It provides functionality to
+// generate, list, and delete key pairs, with proper file permissions and
+// PEM encoding.
 package main
 
 import (
 	"flag"
 	"fmt"
-	rsa "github.com/wunderkind2k1/auth-server-task/pkg/keys/internal"
+	rsa "keytool/internal"
 	"log/slog"
 	"os"
 	"path/filepath"
