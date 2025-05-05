@@ -12,7 +12,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// setupTestKeyPair creates a test RSA key pair for testing
+// setupTestKeyPair creates a test RSA key pair for testing.
 func setupTestKeyPair(t *testing.T) KeyPair {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
@@ -24,7 +24,7 @@ func setupTestKeyPair(t *testing.T) KeyPair {
 	}
 }
 
-// createTestToken creates a JWT token with the given claims
+// createTestToken creates a JWT token with the given claims.
 func createTestToken(t *testing.T, keyPair KeyPair, claims jwt.Claims) string {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	tokenString, err := token.SignedString(keyPair.PrivateKey())
@@ -353,7 +353,7 @@ func TestValidateToken(t *testing.T) {
 	}
 }
 
-// mockResponseWriter is a simple mock of http.ResponseWriter
+// mockResponseWriter is a simple mock of http.ResponseWriter.
 type mockResponseWriter struct {
 	headers    http.Header
 	statusCode int
