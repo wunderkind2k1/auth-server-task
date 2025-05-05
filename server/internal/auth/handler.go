@@ -7,14 +7,14 @@ import (
 	"oauth2-task/internal/token"
 )
 
-// TokenResponse represents the OAuth2 token response
+// TokenResponse represents the OAuth2 token response.
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
 	TokenType   string `json:"token_type"`
 	ExpiresIn   int    `json:"expires_in"`
 }
 
-// HandleToken processes OAuth2 token requests
+// HandleToken processes OAuth2 token requests.
 func HandleToken(keyPair token.KeyPair, userPool map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -31,7 +31,10 @@ func HandleToken(keyPair token.KeyPair, userPool map[string]string) http.Handler
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
 			errorResponse := GetErrorResponse(err)
-			json.NewEncoder(w).Encode(errorResponse)
+			if err := json.NewEncoder(w).Encode(errorResponse); err != nil {
+				slog.Error("Failed to encode error response", "error", err)
+				return
+			}
 			slog.Error("Authentication failed", "error", err)
 			return
 		}

@@ -9,14 +9,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// ErrorResponse represents an OAuth2 error response
+// ErrorResponse represents an OAuth2 error response.
 type ErrorResponse struct {
 	Error            string `json:"error"`
 	ErrorDescription string `json:"error_description,omitempty"`
 }
 
-// IntrospectionResponse represents the OAuth2 token introspection response
-// as defined in RFC 7662 Section 2.2
+// IntrospectionResponse represents the OAuth2 token introspection response.
+// As defined in RFC 7662 Section 2.2.
 type IntrospectionResponse struct {
 	Active    bool   `json:"active"`
 	Scope     string `json:"scope,omitempty"`
@@ -32,7 +32,7 @@ type IntrospectionResponse struct {
 	Jti       string `json:"jti,omitempty"`
 }
 
-// validateToken parses and validates a JWT token using the provided key pair
+// validateToken parses and validates a JWT token using the provided key pair.
 func validateToken(tokenString string, keyPair KeyPair) (*jwt.Token, error) {
 	return jwt.ParseWithClaims(tokenString, &jwt.RegisteredClaims{}, func(token *jwt.Token) (interface{}, error) {
 		// Validate the signing method
@@ -43,7 +43,7 @@ func validateToken(tokenString string, keyPair KeyPair) (*jwt.Token, error) {
 	})
 }
 
-// extractTokenFromRequest extracts the token from either the form data or Authorization header
+// extractTokenFromRequest extracts the token from either the form data or Authorization header.
 func extractTokenFromRequest(r *http.Request) string {
 	// Try form value first
 	token := r.FormValue("token")
@@ -60,7 +60,7 @@ func extractTokenFromRequest(r *http.Request) string {
 	return ""
 }
 
-// introspectToken analyzes a validated token and returns the introspection response
+// introspectToken analyzes a validated token and returns the introspection response.
 // if this gets complex, leave std lib and use. e.g. https://github.com/zitadel/zitadel
 func introspectToken(parsedToken *jwt.Token) IntrospectionResponse {
 	if !parsedToken.Valid {
@@ -83,8 +83,28 @@ func introspectToken(parsedToken *jwt.Token) IntrospectionResponse {
 	}
 }
 
-// HandleIntrospection processes token introspection requests
-// as defined in RFC 7662 Section 2.1
+func writeIntrospectionError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	// For token validation failures, return active=false as per RFC 7662
+	if message == "Token validation failed" {
+		if err := json.NewEncoder(w).Encode(IntrospectionResponse{Active: false}); err != nil {
+			slog.Error("Error encoding response", "error", err)
+		}
+		return
+	}
+
+	// For other errors, return the error response
+	if err := json.NewEncoder(w).Encode(ErrorResponse{
+		Error: message,
+	}); err != nil {
+		slog.Error("Error encoding response", "error", err)
+	}
+}
+
+// HandleIntrospection processes token introspection requests.
+// As defined in RFC 7662 Section 2.1.
 func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Technical: HTTP method validation
@@ -97,12 +117,7 @@ func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 		// Technical: Token extraction
 		tokenString := extractTokenFromRequest(r)
 		if tokenString == "" {
-			w.Header().Set("Content-Type", "application/json")
-			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(ErrorResponse{
-				Error:            "invalid_request",
-				ErrorDescription: "No token provided",
-			})
+			writeIntrospectionError(w, http.StatusBadRequest, "No token provided")
 			slog.Error("No token provided for introspection")
 			return
 		}
@@ -111,6 +126,8 @@ func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 		parsedToken, err := validateToken(tokenString, keyPair)
 		if err != nil {
 			slog.Error("Token validation failed", "error", err)
+			writeIntrospectionError(w, http.StatusOK, "Token validation failed")
+			return
 		}
 
 		// Business Logic: Token introspection
@@ -120,6 +137,7 @@ func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			slog.Error("Failed to encode introspection response", "error", err)
+			writeIntrospectionError(w, http.StatusInternalServerError, "Failed to encode introspection response")
 			return
 		}
 	}

@@ -1,0 +1,49 @@
+# See the dedicated "version" documentation section.
+version: "2"
+
+linters:
+  enable:
+    # Default linters
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    # Additional linters
+    - misspell
+    - gosec
+    - revive
+    - bodyclose
+    - contextcheck
+    - gocyclo
+    - godot
+    - whitespace
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gosec
+        - dupl
+        - gocyclo
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+run:
+  deadline: 5m
+  tests: true
+  skip-dirs:
+    - vendor/
+  allow-parallel-runners: true
+  go: "1.24"
+
+severity:
+  default-severity: error

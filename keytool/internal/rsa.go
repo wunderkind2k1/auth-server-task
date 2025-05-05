@@ -21,31 +21,36 @@ import (
 )
 
 var (
+	// ErrKeyGeneration is returned when RSA key pair generation fails.
 	ErrKeyGeneration = errors.New("failed to generate RSA key pair")
-	ErrKeySave       = errors.New("failed to save RSA key pair")
-	ErrKeyLoad       = errors.New("failed to load RSA key pair")
-	ErrInvalidPath   = errors.New("invalid key path")
-	ErrKeyNotFound   = errors.New("key pair not found")
+	// ErrKeySave is returned when saving an RSA key pair to disk fails.
+	ErrKeySave = errors.New("failed to save RSA key pair")
+	// ErrKeyLoad is returned when loading an RSA key pair from disk fails.
+	ErrKeyLoad = errors.New("failed to load RSA key pair")
+	// ErrInvalidPath is returned when an invalid path is provided for key operations.
+	ErrInvalidPath = errors.New("invalid key path")
+	// ErrKeyNotFound is returned when a requested key pair cannot be found.
+	ErrKeyNotFound = errors.New("key pair not found")
 )
 
-// KeyPair represents an RSA key pair
+// KeyPair represents an RSA key pair.
 type KeyPair struct {
 	PrivateKey *rsa.PrivateKey
 	PublicKey  *rsa.PublicKey
 	KeyID      string // Unique identifier for the key pair
 }
 
-// Manager handles RSA key pair operations
+// Manager handles RSA key pair operations.
 type Manager struct {
 	keysDir string
 }
 
-// KeysDir returns the directory where keys are stored
+// KeysDir returns the directory where keys are stored.
 func (m *Manager) KeysDir() string {
 	return m.keysDir
 }
 
-// NewManager creates a new key manager
+// NewManager creates a new key manager.
 func NewManager(keysDir string) (*Manager, error) {
 	if keysDir == "" {
 		return nil, fmt.Errorf("%w: keys directory cannot be empty", ErrInvalidPath)
@@ -61,7 +66,7 @@ func NewManager(keysDir string) (*Manager, error) {
 	}, nil
 }
 
-// GenerateKeyPair creates a new RSA key pair
+// GenerateKeyPair creates a new RSA key pair.
 func (m *Manager) GenerateKeyPair(bits int) (*KeyPair, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -70,7 +75,7 @@ func (m *Manager) GenerateKeyPair(bits int) (*KeyPair, error) {
 	}
 
 	// Generate a unique key ID (using the first 8 bytes of the public key modulus)
-	keyID := fmt.Sprintf("%x", privateKey.PublicKey.N.Bytes()[:8])
+	keyID := fmt.Sprintf("%x", privateKey.N.Bytes()[:8])
 
 	return &KeyPair{
 		PrivateKey: privateKey,
@@ -79,41 +84,52 @@ func (m *Manager) GenerateKeyPair(bits int) (*KeyPair, error) {
 	}, nil
 }
 
-// SaveKeyPair saves the RSA key pair to files
+// SaveKeyPair saves the RSA key pair to files.
 func (m *Manager) SaveKeyPair(kp *KeyPair) error {
 	if kp == nil {
-		return fmt.Errorf("%w: key pair cannot be nil", ErrKeySave)
+		return errors.New("key pair is nil")
 	}
 
-	privateKeyPath := filepath.Join(m.keysDir, fmt.Sprintf("%s.private.pem", kp.KeyID))
-	publicKeyPath := filepath.Join(m.keysDir, fmt.Sprintf("%s.public.pem", kp.KeyID))
+	// Generate key ID from public key modulus
+	keyID := fmt.Sprintf("%x", kp.PublicKey.N.Bytes()[:8])
 
-	// Save private key
-	privateKeyBytes := x509.MarshalPKCS1PrivateKey(kp.PrivateKey)
+	// Create key directory if it doesn't exist
+	if err := os.MkdirAll(m.keysDir, 0700); err != nil {
+		return fmt.Errorf("failed to create keys directory: %w", err)
+	}
+
+	// Encode private key
 	privateKeyPEM := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PRIVATE KEY",
-		Bytes: privateKeyBytes,
+		Bytes: x509.MarshalPKCS1PrivateKey(kp.PrivateKey),
 	})
-	if err := os.WriteFile(privateKeyPath, privateKeyPEM, 0600); err != nil {
-		slog.Error("failed to save private key", "error", err)
-		return ErrKeySave
-	}
 
-	// Save public key
-	publicKeyBytes := x509.MarshalPKCS1PublicKey(kp.PublicKey)
+	// Encode public key
 	publicKeyPEM := pem.EncodeToMemory(&pem.Block{
 		Type:  "RSA PUBLIC KEY",
-		Bytes: publicKeyBytes,
+		Bytes: x509.MarshalPKCS1PublicKey(kp.PublicKey),
 	})
+
+	// Save private key
+	privateKeyPath := filepath.Join(m.keysDir, fmt.Sprintf("%s.private.pem", keyID))
+	if err := os.WriteFile(privateKeyPath, privateKeyPEM, 0600); err != nil {
+		return fmt.Errorf("failed to save private key: %w", err)
+	}
+
+	// Save public key with 0644 permissions (readable by others) as it's meant to be shared
+	// and used by other services for JWT verification
+	publicKeyPath := filepath.Join(m.keysDir, fmt.Sprintf("%s.public.pem", keyID))
+	// #nosec G306 -- Public key file needs to be readable by others for JWT verification
 	if err := os.WriteFile(publicKeyPath, publicKeyPEM, 0644); err != nil {
-		slog.Error("failed to save public key", "error", err)
-		return ErrKeySave
+		// Clean up private key if public key save fails
+		_ = os.Remove(privateKeyPath)
+		return fmt.Errorf("failed to save public key: %w", err)
 	}
 
 	return nil
 }
 
-// LoadKeyPair loads an RSA key pair from files
+// LoadKeyPair loads an RSA key pair from files.
 func (m *Manager) LoadKeyPair(keyID string) (*KeyPair, error) {
 	if keyID == "" {
 		return nil, fmt.Errorf("%w: key ID cannot be empty", ErrKeyLoad)
@@ -123,6 +139,7 @@ func (m *Manager) LoadKeyPair(keyID string) (*KeyPair, error) {
 	publicKeyPath := filepath.Join(m.keysDir, fmt.Sprintf("%s.public.pem", keyID))
 
 	// Load private key
+	// #nosec G304 -- File path is constructed within the same method and content is immediately parsed as PEM
 	privateKeyPEM, err := os.ReadFile(privateKeyPath)
 	if err != nil {
 		slog.Error("failed to read private key", "error", err)
@@ -142,6 +159,7 @@ func (m *Manager) LoadKeyPair(keyID string) (*KeyPair, error) {
 	}
 
 	// Load public key
+	// #nosec G304 -- File path is constructed within the same method and content is immediately parsed as PEM
 	publicKeyPEM, err := os.ReadFile(publicKeyPath)
 	if err != nil {
 		slog.Error("failed to read public key", "error", err)
@@ -167,7 +185,7 @@ func (m *Manager) LoadKeyPair(keyID string) (*KeyPair, error) {
 	}, nil
 }
 
-// ListKeyPairs returns a list of all available key pairs
+// ListKeyPairs returns a list of all available key pairs.
 func (m *Manager) ListKeyPairs() ([]string, error) {
 	files, err := os.ReadDir(m.keysDir)
 	if err != nil {
@@ -204,7 +222,7 @@ func (m *Manager) ListKeyPairs() ([]string, error) {
 	return keyIDs, nil
 }
 
-// DeleteKeyPair deletes a key pair by its ID
+// DeleteKeyPair deletes a key pair by its ID.
 func (m *Manager) DeleteKeyPair(keyID string) error {
 	if keyID == "" {
 		return fmt.Errorf("%w: key ID cannot be empty", ErrKeyLoad)

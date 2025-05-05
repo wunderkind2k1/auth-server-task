@@ -14,7 +14,7 @@ import (
 	"oauth2-task/internal/token"
 )
 
-// JWK represents a JSON Web Key as defined in RFC 7517
+// JWK represents a JSON Web Key as defined in RFC 7517.
 type JWK struct {
 	Kty string `json:"kty"`
 	Use string `json:"use"`
@@ -24,12 +24,12 @@ type JWK struct {
 	E   string `json:"e"`
 }
 
-// JWKS represents a JSON Web Key Set as defined in RFC 7517
+// JWKS represents a JSON Web Key Set as defined in RFC 7517.
 type JWKS struct {
 	Keys []JWK `json:"keys"`
 }
 
-// HandleJWKS returns the JSON Web Key Set for the server
+// HandleJWKS returns the JSON Web Key Set for the server.
 func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("Received JWKS request", "method", r.Method, "path", r.URL.Path)

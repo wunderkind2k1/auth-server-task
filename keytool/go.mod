@@ -1,3 +1,3 @@
-module github.com/wunderkind2k1/auth-server-task/pkg/keys
+module keytool
 
-go 1.21
+go 1.24

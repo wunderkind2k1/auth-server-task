@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// Error types for authentication failures.
 var (
 	ErrMissingHeader      = errors.New("authorization header required")
 	ErrInvalidFormat      = errors.New("invalid authorization header format")
@@ -15,30 +16,28 @@ var (
 	ErrInvalidCredentials = errors.New("invalid username or password")
 )
 
-// userPool represents a collection of users and their credentials
+// userPool represents a collection of users and their credentials.
 type userPool map[string]string
 
-// BasicAuth represents basic authentication credentials
+// BasicAuth represents basic authentication credentials.
 type BasicAuth struct {
 	Username string
 	Password string
-	pool     map[string]string
+	pool     userPool
 }
 
-// NewBasicAuth creates a new BasicAuth instance with a user pool
-func NewBasicAuth(userpool map[string]string) *BasicAuth {
-	return &BasicAuth{
-		pool: userpool,
-	}
+// NewBasicAuth creates a new BasicAuth instance with a user pool.
+func NewBasicAuth(pool userPool) *BasicAuth {
+	return &BasicAuth{pool: pool}
 }
 
-// ErrorResponse represents an authentication error response
+// ErrorResponse represents an authentication error response.
 type ErrorResponse struct {
 	Error            string `json:"error"`
 	ErrorDescription string `json:"error_description"`
 }
 
-// GetErrorResponse returns the appropriate error response for an auth error
+// GetErrorResponse returns the appropriate error response for an auth error.
 func GetErrorResponse(err error) ErrorResponse {
 	switch err {
 	case ErrMissingHeader:
@@ -69,7 +68,7 @@ func GetErrorResponse(err error) ErrorResponse {
 	}
 }
 
-// ParseBasicAuth validates the Authorization header for Basic Auth
+// ParseBasicAuth validates the Authorization header for Basic Auth.
 func (ba *BasicAuth) ParseBasicAuth(authHeader string) error {
 	if authHeader == "" {
 		slog.Error(ErrMissingHeader.Error())

@@ -14,9 +14,10 @@ A simple OAuth2 server implementation in Go that supports the Client Credentials
 ## Prerequisites
 
 ### Core Requirements
-- [Go](https://golang.org/dl/) 1.21 or later (required for building and running the server)
+- [Go](https://golang.org/dl/) 1.24 or later (required for building and running the server)
 
 ### Development Tools
+- [golangci-lint](https://golangci-lint.run/usage/install/) (for code linting)
 - [Make](https://www.gnu.org/software/make/) (optional, for using Makefile commands in keytool)
 
 ### Local Kubernetes Deployment

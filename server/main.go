@@ -1,3 +1,5 @@
+// Package main implements an OAuth2 server that supports the Client Credentials Grant flow.
+// It provides JWT token issuance, token introspection, and JWKS endpoints.
 package main
 
 import (
@@ -8,6 +10,7 @@ import (
 	"oauth2-task/internal/token"
 	"oauth2-task/internal/userpool"
 	"os"
+	"time"
 )
 
 var (
@@ -45,7 +48,10 @@ func setup() {
 
 func main() {
 	setup()
-	server := &http.Server{Addr: ":8080"}
+	server := &http.Server{
+		Addr:              ":8080",
+		ReadHeaderTimeout: 10 * time.Second,
+	}
 	slog.Info("Starting server", "port", 8080)
 	http.HandleFunc("/token", auth.HandleToken(keyPair, userPool))
 	http.HandleFunc("/.well-known/jwks.json", auth.HandleJWKS(keyPair))

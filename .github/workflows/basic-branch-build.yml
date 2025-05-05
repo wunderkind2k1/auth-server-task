@@ -2,11 +2,12 @@ name: Basic Branch Build
 
 on:
   push:
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -14,12 +15,20 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.21'
+        go-version: '1.24'
 
     - name: Build Keytool
       working-directory: keytool
       run: go build -v ./...
 
+    - name: Test Keytool
+      working-directory: keytool
+      run: go test -v ./...
+
     - name: Build Server
       working-directory: server
       run: go build -v ./...
+
+    - name: Test Server
+      working-directory: server
+      run: go test -v ./...
