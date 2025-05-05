@@ -77,6 +77,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added deployment management scripts:
+  - `scale.sh` for scaling the OAuth2 server deployment
+  - `undeploy.sh` for removing the deployment
 - Added golangci-lint configuration for code quality
 - Added Makefile with common development commands
 - Added comprehensive token introspection endpoint tests
