@@ -10,14 +10,14 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-// ErrorResponse represents an OAuth2 error response
+// ErrorResponse represents an OAuth2 error response.
 type ErrorResponse struct {
 	Error            string `json:"error"`
 	ErrorDescription string `json:"error_description,omitempty"`
 }
 
 // IntrospectionResponse represents the OAuth2 token introspection response
-// as defined in RFC 7662 Section 2.2
+// as defined in RFC 7662 Section 2.2.
 type IntrospectionResponse struct {
 	Active    bool   `json:"active"`
 	Scope     string `json:"scope,omitempty"`
