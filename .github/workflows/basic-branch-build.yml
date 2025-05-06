@@ -41,19 +41,34 @@ jobs:
       with:
         go-version: '1.24'
 
-    - name: Test Keytool
+    - name: Test Keytool with Coverage
       working-directory: keytool
       run: |
-        go test -v ./... || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        go test -v -coverprofile=coverage.out ./... || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
           exit 1
         fi
+        go tool cover -func=coverage.out
+        go tool cover -html=coverage.out -o coverage.html
 
-    - name: Test Server
+    - name: Test Server with Coverage
       working-directory: server
       run: |
-        go test -v ./... || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        go test -v -coverprofile=coverage.out ./... || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
           exit 1
         fi
+        go tool cover -func=coverage.out
+        go tool cover -html=coverage.out -o coverage.html
+
+    - name: Upload Coverage Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          keytool/coverage.html
+          keytool/coverage.out
+          server/coverage.html
+          server/coverage.out
+        retention-days: 7
 
   build:
     runs-on: ubuntu-latest
