@@ -57,11 +57,11 @@ func TestParsePrivateKey(t *testing.T) {
 		if parsedPublicKey == nil {
 			t.Fatal("Public key is nil")
 		}
-		if parsedPublicKey.N.Cmp(privateKey.PublicKey.N) != 0 {
-			t.Error("Public key modulus mismatch")
+		if parsedPublicKey.N.Cmp(privateKey.N) != 0 {
+			t.Errorf("Public key N mismatch")
 		}
-		if parsedPublicKey.E != privateKey.PublicKey.E {
-			t.Error("Public key exponent mismatch")
+		if parsedPublicKey.E != privateKey.E {
+			t.Errorf("Public key E mismatch")
 		}
 	})
 

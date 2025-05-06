@@ -49,7 +49,11 @@ func writeJWKSResponse(w http.ResponseWriter, keyPair token.KeyPair) {
 		slog.Error("Invalid key pair")
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "invalid_key_pair"})
+		if err := json.NewEncoder(w).Encode(map[string]string{"error": "invalid_key_pair"}); err != nil {
+			slog.Error("Failed to write error response", "error", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -67,7 +71,7 @@ func writeJWKSResponse(w http.ResponseWriter, keyPair token.KeyPair) {
 	slog.Info("Successfully sent JWKS response")
 }
 
-// convertToJWK converts a KeyPair to JWK format
+// convertToJWK converts a KeyPair to JWK format.
 func convertToJWK(keyPair token.KeyPair) JWK {
 	return JWK{
 		Kty: "RSA",

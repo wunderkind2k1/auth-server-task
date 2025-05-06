@@ -15,6 +15,11 @@ import (
 // we expect a small lag in the token's timestamps, which is acceptable for our use case.
 const expectedTimeLag = 2 // seconds
 
+// a clear overview of all token-related test cases and their relationships. The complexity
+// comes from thorough validation of JWT claims and error cases, which is essential for
+// security-critical token generation.
+//
+//nolint:gocyclo // We intentionally keep all token generation tests in one function to maintain
 func TestGenerateToken(t *testing.T) {
 	// Generate a test key pair
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -35,7 +40,7 @@ func TestGenerateToken(t *testing.T) {
 		}
 
 		// Parse and verify the token
-		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 			return &privateKey.PublicKey, nil
 		})
 		if err != nil {
@@ -152,7 +157,7 @@ func TestGenerateToken(t *testing.T) {
 			t.Fatalf("Failed to generate token: %v", err)
 		}
 
-		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
+		parsedToken, err := jwt.Parse(token, func(_ *jwt.Token) (interface{}, error) {
 			return &privateKey.PublicKey, nil
 		})
 		if err != nil {

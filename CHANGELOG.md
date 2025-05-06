@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added request validation package with HTTP method, content type, and authorization header validation
+- Added comprehensive test coverage for request validation
+- Added nolint directive for TestGenerateToken to maintain test organization
 - Initial test coverage for token introspection
   - HTTP method validation (POST-only as per RFC 7662)
   - Token extraction from request
@@ -33,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
 
 ### Changed
+- Refactored request validation to use custom mock ResponseWriter instead of httptest
+- Improved error handling in JWKS response writing
+- Simplified embedded field selectors in keyloader tests
 - Updated Go version requirement to 1.24
 - Improved key file naming consistency in RSA key management
 - Enhanced error handling in key management operations
@@ -49,6 +55,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Enhanced API endpoint documentation with examples
 
 ### Fixed
+- Fixed error handling in JWKS response writing
+- Fixed unused parameters in token validation tests
+- Fixed missing periods in documentation comments
 - Fixed token introspection response for invalid tokens (now returns 200 with active=false)
 - Fixed key file naming inconsistency in RSA key management
 - Fixed error handling in token introspection endpoint

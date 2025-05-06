@@ -10,7 +10,7 @@ import (
 	"testing"
 )
 
-// mockResponseWriter is a simple mock of http.ResponseWriter
+// mockResponseWriter is a simple mock of http.ResponseWriter.
 type mockResponseWriter struct {
 	headers    http.Header
 	statusCode int
