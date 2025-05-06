@@ -30,7 +30,9 @@ func (k *rsaKeyPair) PublicKey() *rsa.PublicKey {
 	return k.publicKey
 }
 
-// ParsePrivateKey parses a PEM-encoded RSA private key.
+// ParsePrivateKey parses an RSA private key from its ASN.1 DER encoding.
+// The keyBytes parameter should be the decoded content of a PEM block of type "RSA PRIVATE KEY".
+// PEM decoding should be handled by the caller.
 func ParsePrivateKey(keyBytes []byte) (KeyPair, error) {
 	privateKey, err := x509.ParsePKCS1PrivateKey(keyBytes)
 	if err != nil {
