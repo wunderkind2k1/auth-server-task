@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added test ratio calculation and enforcement:
+  - Minimum threshold of 0.5 (50% test-to-code)
+  - Warning threshold of 0.7 (70% test-to-code)
+  - Target threshold of 1.0 (100% test-to-code)
+  - Component-specific ratios for keytool and server
+  - HTML coverage reports as artifacts
 - Added comprehensive RSA key pair validation using crypto/rsa.Validate()
 - Added detailed package documentation for keytool/internal/rsa package
 - Added test coverage for RSA key pair validation
@@ -39,6 +45,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
 
 ### Changed
+- Improved GitHub Actions workflow:
+  - Moved workflow documentation to `.github/README.md`
+  - Removed duplicate documentation from workflows directory
+  - Updated main README to reference new documentation location
 - Improved RSA key pair validation with built-in crypto/rsa.Validate()
 - Enhanced keytool package documentation with security considerations and usage examples
 - Simplified test structure by removing unnecessary setup functions
