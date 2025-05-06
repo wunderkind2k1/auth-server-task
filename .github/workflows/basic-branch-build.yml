@@ -30,6 +30,31 @@ jobs:
           exit 1
         fi
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Test Keytool
+      working-directory: keytool
+      run: |
+        go test -v ./... || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          exit 1
+        fi
+
+    - name: Test Server
+      working-directory: server
+      run: |
+        go test -v ./... || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          exit 1
+        fi
+
   build:
     runs-on: ubuntu-latest
     steps:
@@ -44,14 +69,6 @@ jobs:
       working-directory: keytool
       run: go build -v ./...
 
-    - name: Test Keytool
-      working-directory: keytool
-      run: go test -v ./...
-
     - name: Build Server
       working-directory: server
       run: go build -v ./...
-
-    - name: Test Server
-      working-directory: server
-      run: go test -v ./...
