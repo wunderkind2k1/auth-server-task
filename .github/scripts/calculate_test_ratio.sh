@@ -16,7 +16,8 @@ get_source_stats() {
 # Function to get test code stats
 get_test_stats() {
     local dir=$1
-    cloc --include-ext=test.go "$dir" --json | jq -r '.Go.code // 0'
+    # Count both _test.go files and files in test directories
+    cloc --match-f=".*_test\.go$" --match-d=".*test.*" "$dir" --json | jq -r '.Go.code // 0'
 }
 
 # Ensure we're in the repository root
