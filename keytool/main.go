@@ -89,7 +89,7 @@ func main() {
 }
 
 func handleGenerate(manager *rsa.Manager, bits int) error {
-	// Generate new key pair
+	// Generate a new key pair
 	keyPair, err := manager.GenerateKeyPair(bits)
 	if err != nil {
 		return fmt.Errorf("failed to generate key pair: %w", err)

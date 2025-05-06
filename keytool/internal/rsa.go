@@ -1,8 +1,39 @@
 // Package rsa provides the core functionality for the key management tool.
 // It implements secure generation, storage, and retrieval of RSA key pairs
-// specifically designed for JWT signing in the OAuth2 server. The package handles
-// key persistence in PEM format with proper file permissions (0600 for private keys,
-// 0644 for public keys) and provides a simple interface for key management operations.
+// specifically designed for JWT signing in the OAuth2 server.
+//
+// Key Features:
+//   - Secure RSA key pair generation with configurable key sizes (2048+ bits)
+//   - PEM-encoded key storage with proper file permissions (0600 for private, 0644 for public)
+//   - Unique key identification using public key modulus
+//   - Atomic key pair operations (save/delete)
+//   - Built-in key validation using crypto/rsa.Validate()
+//
+// Security Considerations:
+//   - Private keys are stored with strict permissions (0600)
+//   - Public keys are stored with read-only permissions (0644)
+//   - Minimum key size of 2048 bits is enforced
+//   - Key operations are atomic to prevent partial writes
+//   - Keys are validated before saving
+//
+// Usage:
+//
+//	manager, err := NewManager("/path/to/keys")
+//	if err != nil {
+//	    // Handle error
+//	}
+//
+//	// Generate a new key pair
+//	keyPair, err := manager.generateKeyPair(2048)
+//	if err != nil {
+//	    // Handle error
+//	}
+//
+//	// Save the key pair
+//	if err := manager.SaveKeyPair(keyPair); err != nil {
+//	    // Handle error
+//	}
+//
 // This package is intentionally separate from the main application's key handling
 // to maintain a clear boundary between the key management tool and the server.
 package rsa
@@ -31,6 +62,8 @@ var (
 	ErrInvalidPath = errors.New("invalid key path")
 	// ErrKeyNotFound is returned when a requested key pair cannot be found.
 	ErrKeyNotFound = errors.New("key pair not found")
+	// ErrInvalidKeySize is returned when an invalid key size is requested.
+	ErrInvalidKeySize = errors.New("invalid key size: must be at least 2048 bits")
 )
 
 // KeyPair represents an RSA key pair.
@@ -68,6 +101,10 @@ func NewManager(keysDir string) (*Manager, error) {
 
 // GenerateKeyPair creates a new RSA key pair.
 func (m *Manager) GenerateKeyPair(bits int) (*KeyPair, error) {
+	if bits < 2048 {
+		return nil, ErrInvalidKeySize
+	}
+
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
 		slog.Error("failed to generate RSA key pair", "error", err)
@@ -88,6 +125,15 @@ func (m *Manager) GenerateKeyPair(bits int) (*KeyPair, error) {
 func (m *Manager) SaveKeyPair(kp *KeyPair) error {
 	if kp == nil {
 		return errors.New("key pair is nil")
+	}
+
+	if kp.PrivateKey == nil || kp.PublicKey == nil {
+		return errors.New("invalid key pair: private or public key is nil")
+	}
+
+	// Validate the private key
+	if err := kp.PrivateKey.Validate(); err != nil {
+		return fmt.Errorf("invalid private key: %w", err)
 	}
 
 	// Generate key ID from public key modulus

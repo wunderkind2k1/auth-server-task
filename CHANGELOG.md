@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Added comprehensive RSA key pair validation using crypto/rsa.Validate()
+- Added detailed package documentation for keytool/internal/rsa package
+- Added test coverage for RSA key pair validation
 - Added request validation package with HTTP method, content type, and authorization header validation
 - Added comprehensive test coverage for request validation
 - Added nolint directive for TestGenerateToken to maintain test organization
@@ -36,6 +39,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added reference to Rob Pike's Go proverb about code duplication in the context of key management implementation
 
 ### Changed
+- Improved RSA key pair validation with built-in crypto/rsa.Validate()
+- Enhanced keytool package documentation with security considerations and usage examples
+- Simplified test structure by removing unnecessary setup functions
 - Refactored request validation to use custom mock ResponseWriter instead of httptest
 - Improved error handling in JWKS response writing
 - Simplified embedded field selectors in keyloader tests
