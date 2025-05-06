@@ -10,14 +10,13 @@ fi
 # Function to get source code stats (excluding tests)
 get_source_stats() {
     local dir=$1
-    cloc --exclude-dir=_test --exclude-ext=test.go "$dir" --json | jq -r '.Go.code // 0'
+    cloc --exclude-ext=test.go "$dir" --json | jq -r '.Go.code // 0'
 }
 
 # Function to get test code stats
 get_test_stats() {
     local dir=$1
-    # Count both _test.go files and files in test directories
-    cloc --match-f=".*_test\.go$" --match-d=".*test.*" "$dir" --json | jq -r '.Go.code // 0'
+    cloc --include-ext=go --match-f='_test\.go' "$dir" --json | jq -r '.Go.code // 0'
 }
 
 # Ensure we're in the repository root
