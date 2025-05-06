@@ -24,13 +24,79 @@ jobs:
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.0.2
         $(go env GOPATH)/bin/golangci-lint --version
 
+    - uses: ./.github/actions/go-cache
+
     - name: Run linting
       run: |
-        make lint || if [ "${{ github.event_name }}" != "push" ] || [ "${{ github.ref }}" = "refs/heads/main" ]; then
+        make lint || if [ "${{ github.ref }}" = "refs/heads/main" ]; then
           exit 1
         fi
 
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    outputs:
+      test_ratio: ${{ steps.test_ratio.outputs.test_ratio }}
+      test_ratio_keytool: ${{ steps.test_ratio.outputs.test_ratio_keytool }}
+      test_ratio_server: ${{ steps.test_ratio.outputs.test_ratio_server }}
+      ratio_status: ${{ steps.test_ratio.outputs.ratio_status }}
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - uses: ./.github/actions/go-cache
+
+    - name: Install cloc and jq
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cloc jq
+
+    - name: Test Keytool with Coverage
+      working-directory: keytool
+      run: |
+        go test -v -coverprofile=coverage.out ./... || if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          exit 1
+        fi
+        go tool cover -func=coverage.out
+        go tool cover -html=coverage.out -o coverage.html
+
+    - name: Test Server with Coverage
+      working-directory: server
+      run: |
+        go test -v -coverprofile=coverage.out ./... || if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          exit 1
+        fi
+        go tool cover -func=coverage.out
+        go tool cover -html=coverage.out -o coverage.html
+
+    - name: Calculate Test Ratio
+      id: test_ratio
+      run: |
+        chmod +x .github/scripts/calculate_test_ratio.sh
+        if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          .github/scripts/calculate_test_ratio.sh enforce
+        else
+          .github/scripts/calculate_test_ratio.sh
+        fi
+
+    - name: Upload Coverage Reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-reports
+        path: |
+          keytool/coverage.html
+          keytool/coverage.out
+          server/coverage.html
+          server/coverage.out
+        retention-days: 7
+
   build:
+    name: Build
+    needs: [lint, test]
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -40,18 +106,27 @@ jobs:
       with:
         go-version: '1.24'
 
+    - uses: ./.github/actions/go-cache
+
     - name: Build Keytool
       working-directory: keytool
-      run: go build -v ./...
-
-    - name: Test Keytool
-      working-directory: keytool
-      run: go test -v ./...
+      run: |
+        go build -v ./... || if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          exit 1
+        fi
 
     - name: Build Server
       working-directory: server
-      run: go build -v ./...
+      run: |
+        go build -v ./... || if [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          exit 1
+        fi
 
-    - name: Test Server
-      working-directory: server
-      run: go test -v ./...
+    - name: Display Test Ratio Summary
+      if: always()
+      run: |
+        echo "## Test-to-Code Ratio Summary" >> $GITHUB_STEP_SUMMARY
+        echo "Total Ratio: ${{ needs.test.outputs.test_ratio }}" >> $GITHUB_STEP_SUMMARY
+        echo "Keytool Ratio: ${{ needs.test.outputs.test_ratio_keytool }}" >> $GITHUB_STEP_SUMMARY
+        echo "Server Ratio: ${{ needs.test.outputs.test_ratio_server }}" >> $GITHUB_STEP_SUMMARY
+        echo "Status: ${{ needs.test.outputs.ratio_status }}" >> $GITHUB_STEP_SUMMARY

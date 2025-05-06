@@ -34,7 +34,7 @@ Our CI/CD pipeline is configured using GitHub Actions and includes:
 - Merge gate protection for the main branch
 - Flexible development workflow for feature branches
 
-See [.github/workflows/README.md](.github/workflows/README.md) for detailed information about our workflows and their behavior.
+See [.github/README.md](.github/README.md) for detailed information about our workflows and their behavior.
 
 ## Getting Started
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"oauth2-task/internal/request"
 	"oauth2-task/internal/token"
 )
 
@@ -17,9 +18,7 @@ type TokenResponse struct {
 // HandleToken processes OAuth2 token requests.
 func HandleToken(keyPair token.KeyPair, userPool map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodPost {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-			slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
+		if !request.ValidateMethod(w, r, http.MethodPost) {
 			return
 		}
 
@@ -27,6 +26,11 @@ func HandleToken(keyPair token.KeyPair, userPool map[string]string) http.Handler
 		basicAuth := NewBasicAuth(userPool)
 
 		// Validate Basic Auth
+		if !request.ValidateAuthorization(w, r, "Basic") {
+			return
+		}
+
+		// Parse Basic Auth credentials
 		if err := basicAuth.ParseBasicAuth(r.Header.Get("Authorization")); err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusUnauthorized)
