@@ -2,9 +2,9 @@ package token
 
 import (
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
+	"oauth2-task/internal/request"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -108,23 +108,11 @@ func writeIntrospectionError(w http.ResponseWriter, status int, message string) 
 	}
 }
 
-// validateHTTPMethod checks if the request method is POST as required by RFC 7662.
-// If the method is not POST, it writes a MethodNotAllowed error response and returns false.
-// Returns true if the method is valid.
-func validateHTTPMethod(w http.ResponseWriter, r *http.Request) bool {
-	if r.Method != http.MethodPost {
-		slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
-		http.Error(w, fmt.Sprintf("Method not allowed: %s", r.Method), http.StatusMethodNotAllowed)
-		return false
-	}
-	return true
-}
-
 // HandleIntrospection processes token introspection requests as defined in RFC 7662 Section 2.1.
 func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Technical: HTTP method validation
-		if !validateHTTPMethod(w, r) {
+		if !request.ValidateMethod(w, r, http.MethodPost) {
 			return // Stop if invalid method
 		}
 
@@ -149,6 +137,7 @@ func HandleIntrospection(keyPair KeyPair) http.HandlerFunc {
 
 		// Technical: Response handling
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			slog.Error("Failed to encode introspection response", "error", err)
 			writeIntrospectionError(w, http.StatusInternalServerError, "Failed to encode introspection response")

@@ -11,6 +11,7 @@ import (
 	"log/slog"
 	"math/big"
 	"net/http"
+	"oauth2-task/internal/request"
 	"oauth2-task/internal/token"
 )
 
@@ -34,32 +35,46 @@ func HandleJWKS(keyPair token.KeyPair) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("Received JWKS request", "method", r.Method, "path", r.URL.Path)
 
-		if r.Method != http.MethodGet {
-			slog.Error("Method not allowed", "method", r.Method, "status", http.StatusMethodNotAllowed)
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		if !request.ValidateMethod(w, r, http.MethodGet) {
 			return
 		}
 
-		// Convert RSA public key to JWK format
-		jwk := JWK{
-			Kty: "RSA",
-			Use: "sig",
-			Kid: "1", // TODO: Implement proper key ID generation
-			Alg: "RS256",
-			N:   base64.RawURLEncoding.EncodeToString(keyPair.PublicKey().N.Bytes()),
-			E:   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(keyPair.PublicKey().E)).Bytes()),
-		}
+		writeJWKSResponse(w, keyPair)
+	}
+}
 
-		jwks := JWKS{
-			Keys: []JWK{jwk},
-		}
-
+// writeJWKSResponse writes the JWKS response to the given http.ResponseWriter.
+func writeJWKSResponse(w http.ResponseWriter, keyPair token.KeyPair) {
+	if keyPair == nil {
+		slog.Error("Invalid key pair")
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(jwks); err != nil {
-			slog.Error("Failed to encode JWKS response", "error", err)
-			http.Error(w, "Internal server error", http.StatusInternalServerError)
-			return
-		}
-		slog.Info("Successfully sent JWKS response")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "invalid_key_pair"})
+		return
+	}
+
+	jwks := JWKS{
+		Keys: []JWK{convertToJWK(keyPair)},
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(jwks); err != nil {
+		slog.Error("Failed to encode JWKS response", "error", err)
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
+	slog.Info("Successfully sent JWKS response")
+}
+
+// convertToJWK converts a KeyPair to JWK format
+func convertToJWK(keyPair token.KeyPair) JWK {
+	return JWK{
+		Kty: "RSA",
+		Use: "sig",
+		Kid: "1", // TODO: Implement proper key ID generation
+		Alg: "RS256",
+		N:   base64.RawURLEncoding.EncodeToString(keyPair.PublicKey().N.Bytes()),
+		E:   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(keyPair.PublicKey().E)).Bytes()),
 	}
 }

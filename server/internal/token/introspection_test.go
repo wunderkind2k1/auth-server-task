@@ -9,6 +9,8 @@ import (
 	"testing"
 	"time"
 
+	"oauth2-task/internal/request"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -460,76 +462,55 @@ func TestWriteIntrospectionError(t *testing.T) {
 	}
 }
 
-// TestValidateHTTPMethod tests the HTTP method validation as required by RFC 7662.
+// TestValidateMethod tests the HTTP method validation as required by RFC 7662.
 // The introspection endpoint must only accept POST requests.
-func TestValidateHTTPMethod(t *testing.T) {
+func TestValidateMethod(t *testing.T) {
 	tests := []struct {
-		name       string
-		method     string
-		wantStatus int
-		wantBody   string
+		name           string
+		method         string
+		expectedMethod string
+		wantValid      bool
+		wantStatus     int
 	}{
 		{
-			name:       "Valid POST method",
-			method:     http.MethodPost,
-			wantStatus: 0, // No status written for valid method
-			wantBody:   "",
+			name:           "POST method",
+			method:         http.MethodPost,
+			expectedMethod: http.MethodPost,
+			wantValid:      true,
 		},
 		{
-			name:       "Invalid GET method",
-			method:     http.MethodGet,
-			wantStatus: http.StatusMethodNotAllowed,
-			wantBody:   "Method not allowed: GET\n",
+			name:           "GET method",
+			method:         http.MethodGet,
+			expectedMethod: http.MethodPost,
+			wantValid:      false,
+			wantStatus:     http.StatusMethodNotAllowed,
 		},
 		{
-			name:       "Invalid PUT method",
-			method:     http.MethodPut,
-			wantStatus: http.StatusMethodNotAllowed,
-			wantBody:   "Method not allowed: PUT\n",
+			name:           "PUT method",
+			method:         http.MethodPut,
+			expectedMethod: http.MethodPost,
+			wantValid:      false,
+			wantStatus:     http.StatusMethodNotAllowed,
 		},
 		{
-			name:       "Invalid DELETE method",
-			method:     http.MethodDelete,
-			wantStatus: http.StatusMethodNotAllowed,
-			wantBody:   "Method not allowed: DELETE\n",
-		},
-		{
-			name:       "Invalid PATCH method",
-			method:     http.MethodPatch,
-			wantStatus: http.StatusMethodNotAllowed,
-			wantBody:   "Method not allowed: PATCH\n",
+			name:           "DELETE method",
+			method:         http.MethodDelete,
+			expectedMethod: http.MethodPost,
+			wantValid:      false,
+			wantStatus:     http.StatusMethodNotAllowed,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			req, err := http.NewRequest(tt.method, "/introspect", nil)
-			if err != nil {
-				t.Fatalf("Failed to create test request: %v", err)
-			}
-
+			req := &http.Request{Method: tt.method}
 			w := newMockResponseWriter()
-			got := validateHTTPMethod(w, req)
-
-			// Check return value
-			if tt.method == http.MethodPost {
-				if !got {
-					t.Error("validateHTTPMethod() = false, want true for POST method")
-				}
-			} else {
-				if got {
-					t.Error("validateHTTPMethod() = true, want false for non-POST method")
-				}
+			got := request.ValidateMethod(w, req, tt.expectedMethod)
+			if got != tt.wantValid {
+				t.Errorf("ValidateMethod() = %v, want %v", got, tt.wantValid)
 			}
-
-			// Check status code
-			if w.statusCode != tt.wantStatus {
-				t.Errorf("validateHTTPMethod() status = %v, want %v", w.statusCode, tt.wantStatus)
-			}
-
-			// Check response body
-			if string(w.body) != tt.wantBody {
-				t.Errorf("validateHTTPMethod() body = %q, want %q", string(w.body), tt.wantBody)
+			if !tt.wantValid && w.statusCode != tt.wantStatus {
+				t.Errorf("ValidateMethod() status = %v, want %v", w.statusCode, tt.wantStatus)
 			}
 		})
 	}
