@@ -24,6 +24,8 @@ jobs:
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v2.0.2
         $(go env GOPATH)/bin/golangci-lint --version
 
+    - uses: ./.github/actions/go-cache
+
     - name: Run linting
       run: |
         make lint || if [ "${{ github.ref }}" = "refs/heads/main" ]; then
@@ -45,6 +47,8 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: '1.24'
+
+    - uses: ./.github/actions/go-cache
 
     - name: Install cloc and jq
       run: |
@@ -101,6 +105,8 @@ jobs:
       uses: actions/setup-go@v5
       with:
         go-version: '1.24'
+
+    - uses: ./.github/actions/go-cache
 
     - name: Build Keytool
       working-directory: keytool

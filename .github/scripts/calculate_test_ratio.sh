@@ -10,14 +10,17 @@ fi
 # Function to get source code stats (excluding tests)
 get_source_stats() {
     local dir=$1
-    cloc --exclude-dir=_test --exclude-ext=test.go "$dir" --json | jq -r '.Go.code'
+    cloc --exclude-dir=_test --exclude-ext=test.go "$dir" --json | jq -r '.Go.code // 0'
 }
 
 # Function to get test code stats
 get_test_stats() {
     local dir=$1
-    cloc --include-ext=test.go "$dir" --json | jq -r '.Go.code'
+    cloc --include-ext=test.go "$dir" --json | jq -r '.Go.code // 0'
 }
+
+# Ensure we're in the repository root
+cd "$GITHUB_WORKSPACE" || exit 1
 
 # Calculate for keytool
 keytool_source=$(get_source_stats "keytool")
@@ -55,12 +58,20 @@ echo
 echo "Keytool:"
 echo "  Source lines: $keytool_source"
 echo "  Test lines:   $keytool_tests"
-echo "  Ratio:        $(echo "scale=2; $keytool_tests / $keytool_source" | bc)"
+if [ "$keytool_source" -ne 0 ]; then
+    echo "  Ratio:        $(echo "scale=2; $keytool_tests / $keytool_source" | bc)"
+else
+    echo "  Ratio:        N/A (no source code)"
+fi
 echo
 echo "Server:"
 echo "  Source lines: $server_source"
 echo "  Test lines:   $server_tests"
-echo "  Ratio:        $(echo "scale=2; $server_tests / $server_source" | bc)"
+if [ "$server_source" -ne 0 ]; then
+    echo "  Ratio:        $(echo "scale=2; $server_tests / $server_source" | bc)"
+else
+    echo "  Ratio:        N/A (no source code)"
+fi
 echo
 echo "Total:"
 echo "  Source lines: $total_source"
@@ -70,8 +81,16 @@ echo "  Ratio:        $ratio"
 # Set GitHub step output for workflow summary
 if [ "$total_source" -ne 0 ]; then
     echo "test_ratio=$ratio" >> $GITHUB_OUTPUT
-    echo "test_ratio_keytool=$(echo "scale=2; $keytool_tests / $keytool_source" | bc)" >> $GITHUB_OUTPUT
-    echo "test_ratio_server=$(echo "scale=2; $server_tests / $server_source" | bc)" >> $GITHUB_OUTPUT
+    if [ "$keytool_source" -ne 0 ]; then
+        echo "test_ratio_keytool=$(echo "scale=2; $keytool_tests / $keytool_source" | bc)" >> $GITHUB_OUTPUT
+    else
+        echo "test_ratio_keytool=0" >> $GITHUB_OUTPUT
+    fi
+    if [ "$server_source" -ne 0 ]; then
+        echo "test_ratio_server=$(echo "scale=2; $server_tests / $server_source" | bc)" >> $GITHUB_OUTPUT
+    else
+        echo "test_ratio_server=0" >> $GITHUB_OUTPUT
+    fi
 
     # Check against thresholds
     if (( $(echo "$ratio < $MIN_RATIO" | bc -l) )); then
@@ -85,5 +104,13 @@ if [ "$total_source" -ne 0 ]; then
         echo "ratio_status=✅ Below target threshold" >> $GITHUB_OUTPUT
     else
         echo "ratio_status=🎯 Above target threshold" >> $GITHUB_OUTPUT
+    fi
+else
+    echo "test_ratio=0" >> $GITHUB_OUTPUT
+    echo "test_ratio_keytool=0" >> $GITHUB_OUTPUT
+    echo "test_ratio_server=0" >> $GITHUB_OUTPUT
+    echo "ratio_status=❌ No source code found" >> $GITHUB_OUTPUT
+    if [ "$1" = "enforce" ]; then
+        exit 1
     fi
 fi
