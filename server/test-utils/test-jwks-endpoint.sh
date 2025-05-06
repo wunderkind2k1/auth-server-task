@@ -31,9 +31,9 @@ if [ "$status_code" != "405" ]; then
     exit 1
 fi
 
-if [ "$body" != "Method not allowed" ]; then
+if [ "$body" != "Method not allowed: POST" ]; then
     echo -e "${RED}Unexpected error message: $body${NC}"
-    echo -e "${RED}Expected: Method not allowed${NC}"
+    echo -e "${RED}Expected: Method not allowed: POST${NC}"
     exit 1
 fi
 
