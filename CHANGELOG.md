@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.0.10] - 2025-05-07
+
 ### Added
 - Added test ratio calculation and enforcement:
   - Minimum threshold of 0.5 (50% test-to-code)
