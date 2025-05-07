@@ -1,4 +1,6 @@
 # GitHub Configuration
+**Note:** This file must not be named readme.md as this will lead to it displayed on github as the main readme.
+Thus: Please keep a different name.
 
 This directory contains GitHub-specific configurations and tools.
 
