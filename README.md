@@ -2,6 +2,21 @@
 
 This is a simple OAuth2 server implementation in Go.
 
+## README Introduction
+
+This repository was created in May 2025 as part of my application for a Golang Software Engineer position. The assigned task is documented in `task.md`, with the implementation status detailed in `taskstatus.md`.
+
+**AI Usage Disclaimer**
+This project was developed with significant assistance from AI tools, both integrated into development environments and accessed via browsers. As a greenfield project with no restrictions on AI usage, I leveraged these tools extensively. However, the development followed rigorous software engineering practices, with iterative development, thorough testing, and quality assurance. Each iteration was carefully reviewed, and classic pull request workflows with quality gates were implemented to ensure robust code quality.
+
+**Proposed Next Steps**
+To enhance the project, I recommend the following improvements:
+- **CI/CD Optimization**: Address caching issues related to Go workspace usage for faster, more reliable builds.
+- **Infrastructure as Code (IaC)**: Transition the Kubernetes configuration to an IaC solution, such as Pulumi (preferred) or Terraform, for better scalability and maintainability.
+- **Pipeline as Code (PaC)**: Adopt a tool like Dagger.io to enable type-safe, high-quality CI/CD pipelines and Docker image builds.
+- **Telemetry**: Implement observability using OpenTelemetry or a hosted solution like Sentry to monitor application performance and errors.
+
+
 ## Features
 
 - OAuth2 Client Credentials Grant flow ([RFC 6749](https://datatracker.ietf.org/doc/html/rfc6749))
